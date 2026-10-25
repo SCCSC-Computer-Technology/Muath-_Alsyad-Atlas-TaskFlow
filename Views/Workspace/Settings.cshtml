@@ -1,53 +1,77 @@
 ﻿
-@* App #1 - Atlas TaskFlow - Settings Wireframe *@
+@model Atlas_TaskFlow_App.ViewModels.SettingsPageViewModel
 
 @{
     Layout = "_AppLayout";
     ViewData["Title"] = "Settings";
+
+    string? success = TempData["SettingsSuccess"] as string;
+    string? error = TempData["SettingsError"] as string;
 }
 
 @section Styles {
-    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+    <link rel="stylesheet" href="~/css/workspace.css" />
+    <link rel="stylesheet" href="~/css/settings-live.css" />
 }
 
 <div class="wf-page">
 
+    <!-- PAGE HEADING -->
     <div class="wf-heading">
         <div>
             <h1>Settings</h1>
-            <p>Manage your account, preferences, and application settings.</p>
+            <p>Manage your account, personal profile, and preferences.</p>
         </div>
     </div>
 
-    <div class="wf-demo-label">
-        Settings Preview — changes are not saved to an account or database.
-    </div>
+    <!-- SAVE MESSAGES -->
+    @if (success != null)
+    {
+        <div class="settings-live-message settings-success"
+             role="status">
+            @success
+        </div>
+    }
 
-    <!-- SETTINGS TABS -->
+    @if (error != null)
+    {
+        <div class="settings-live-message settings-error"
+             role="alert">
+            @error
+        </div>
+    }
+
+    <!-- SETTINGS NAVIGATION -->
     <div class="wf-settings-tabs">
 
-        <button type="button" class="active"
+        <button type="button"
+                class="active"
                 data-settings-tab="profile">
             Profile
         </button>
 
-        <button type="button" data-settings-tab="account">
+        <button type="button"
+                data-settings-tab="account">
             Account
         </button>
 
-        <button type="button" data-settings-tab="notifications">
+        <button type="button"
+                data-settings-tab="notifications">
             Notifications
         </button>
 
-        <button type="button" data-settings-tab="appearance">
+        <button type="button"
+                data-settings-tab="appearance">
             Appearance
         </button>
 
-        <button type="button" data-settings-tab="privacy">
+        <button type="button"
+                data-settings-tab="privacy">
             Privacy &amp; Security
         </button>
 
-        <button type="button" data-settings-tab="integrations">
+        <button type="button"
+                data-settings-tab="integrations">
             Integrations
         </button>
 
@@ -55,204 +79,401 @@
 
     <div class="wf-layout">
 
-        <div class="wf-main">
+        <!-- MAIN CONTENT -->
+        <main class="wf-main">
 
-            <!-- PROFILE -->
+            <!-- ===================================
+                 PROFILE - REAL SQL SERVER FORM
+                 =================================== -->
             <section class="wf-panel wf-settings-panel"
                      data-settings-panel="profile">
 
                 <div class="wf-panel-heading">
                     <h2>Profile Information</h2>
 
-                    <button type="button"
-                            class="wf-btn wf-btn-primary wf-btn-small"
-                            data-demo-save>
-                        Save Changes
-                    </button>
+                    <span class="settings-live-status">
+                        Saved in SQL Server
+                    </span>
                 </div>
 
-                <div class="wf-form-body">
+                <form method="post"
+                      action="@Url.Action("SaveProfile", "Settings")">
 
-                    <div class="wf-profile">
-                        <span class="wf-avatar wf-avatar-large">AS</span>
+                    @Html.AntiForgeryToken()
 
-                        <div>
-                            <strong>Change Profile Photo</strong>
-                            <p>JPG, PNG or GIF (Preview only)</p>
-                            <button type="button" class="wf-btn wf-btn-outline"
-                                    disabled>
-                                Upload Photo
+                    <div class="wf-form-body">
+
+                        <div class="wf-profile">
+
+                            <span class="wf-avatar wf-avatar-large">
+                                @(Model.Profile.FullName.Length > 0
+                                    ? Model.Profile.FullName.Substring(0, 1).ToUpper()
+                                    : "U")
+                            </span>
+
+                            <div>
+                                <strong>@Model.Profile.FullName</strong>
+
+                                <p>@Model.Email</p>
+
+                                <span class="settings-live-note">
+                                    Profile photo upload will be added later.
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div class="wf-form-grid">
+
+                            <!-- FULL NAME -->
+                            <div class="wf-field">
+
+                                <label for="profileFullName">
+                                    Full Name
+                                </label>
+
+                                <input id="profileFullName"
+                                       name="fullName"
+                                       value="@Model.Profile.FullName"
+                                       minlength="2"
+                                       maxlength="100"
+                                       required />
+
+                            </div>
+
+                            <!-- EMAIL - READ ONLY -->
+                            <div class="wf-field">
+
+                                <label for="profileEmail">
+                                    Email Address
+                                </label>
+
+                                <input id="profileEmail"
+                                       type="email"
+                                       value="@Model.Email"
+                                       readonly />
+
+                            </div>
+
+                            <!-- STUDENT ID -->
+                            <div class="wf-field">
+
+                                <label for="profileStudentId">
+                                    Student ID (Optional)
+                                </label>
+
+                                <input id="profileStudentId"
+                                       name="studentId"
+                                       value="@Model.Profile.StudentId"
+                                       maxlength="50" />
+
+                            </div>
+
+                            <!-- UNIVERSITY -->
+                            <div class="wf-field">
+
+                                <label for="profileUniversity">
+                                    University / Institution
+                                </label>
+
+                                <input id="profileUniversity"
+                                       name="university"
+                                       value="@Model.Profile.University"
+                                       maxlength="150" />
+
+                            </div>
+
+                            <!-- MAJOR -->
+                            <div class="wf-field">
+
+                                <label for="profileMajor">
+                                    Major
+                                </label>
+
+                                <input id="profileMajor"
+                                       name="major"
+                                       value="@Model.Profile.Major"
+                                       maxlength="100"
+                                       placeholder="Computer Science" />
+
+                            </div>
+
+                            <!-- ACADEMIC YEAR -->
+                            <div class="wf-field">
+
+                                <label for="profileYear">
+                                    Academic Year
+                                </label>
+
+                                <input id="profileYear"
+                                       name="academicYear"
+                                       value="@Model.Profile.AcademicYear"
+                                       maxlength="30"
+                                       placeholder="3rd Year" />
+
+                            </div>
+
+                            <!-- GRADUATION -->
+                            <div class="wf-field">
+
+                                <label for="profileGraduation">
+                                    Expected Graduation
+                                </label>
+
+                                <input id="profileGraduation"
+                                       name="expectedGraduation"
+                                       type="date"
+                                       value="@(Model.Profile.ExpectedGraduation?.ToString("yyyy-MM-dd"))" />
+
+                            </div>
+
+                            <!-- TIME ZONE -->
+                            <div class="wf-field">
+
+                                <label for="profileTimeZone">
+                                    Time Zone
+                                </label>
+
+                                <select id="profileTimeZone"
+                                        name="timeZone">
+
+                                    <option value="America/New_York"
+                                            selected="@(Model.Profile.TimeZone == "America/New_York")">
+                                        Eastern Time
+                                    </option>
+
+                                    <option value="America/Chicago"
+                                            selected="@(Model.Profile.TimeZone == "America/Chicago")">
+                                        Central Time
+                                    </option>
+
+                                    <option value="America/Denver"
+                                            selected="@(Model.Profile.TimeZone == "America/Denver")">
+                                        Mountain Time
+                                    </option>
+
+                                    <option value="America/Los_Angeles"
+                                            selected="@(Model.Profile.TimeZone == "America/Los_Angeles")">
+                                        Pacific Time
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <!-- BIO -->
+                            <div class="wf-field wf-field-wide">
+
+                                <label for="profileBio">
+                                    Bio
+                                </label>
+
+                                <textarea id="profileBio"
+                                          name="bio"
+                                          rows="4"
+                                          maxlength="500"
+                                          placeholder="Tell us about yourself...">@Model.Profile.Bio</textarea>
+
+                            </div>
+
+                        </div>
+
+                        <div class="settings-live-actions">
+
+                            <button type="submit"
+                                    class="wf-btn wf-btn-primary">
+                                Save Profile
                             </button>
-                        </div>
-                    </div>
 
-                    <div class="wf-form-grid">
+                            <span class="settings-live-note">
+                                Only your signed-in profile will be updated.
+                            </span>
 
-                        <div class="wf-field">
-                            <label for="settingsName">Full Name</label>
-                            <input id="settingsName" value="Alex Student" />
-                        </div>
-
-                        <div class="wf-field">
-                            <label for="settingsEmail">Email Address</label>
-                            <input id="settingsEmail" type="email"
-                                   value="alex.student@example.com" />
-                        </div>
-
-                        <div class="wf-field">
-                            <label for="settingsStudentId">Student ID (Optional)</label>
-                            <input id="settingsStudentId"
-                                   placeholder="Enter student ID..." />
-                        </div>
-
-                        <div class="wf-field">
-                            <label for="settingsUniversity">University / Institution</label>
-                            <input id="settingsUniversity"
-                                   value="State University" />
-                        </div>
-
-                        <div class="wf-field wf-field-wide">
-                            <label for="settingsBio">Bio</label>
-                            <textarea id="settingsBio" rows="3">Computer Science student passionate about web development and building useful tools.</textarea>
                         </div>
 
                     </div>
 
-                </div>
-
-                <div class="wf-panel-heading wf-subsection">
-                    <h2>Academic Information</h2>
-
-                    <button type="button"
-                            class="wf-btn wf-btn-outline wf-btn-small"
-                            data-demo-save>
-                        Save Changes
-                    </button>
-                </div>
-
-                <div class="wf-form-body">
-                    <div class="wf-form-grid">
-
-                        <div class="wf-field">
-                            <label>Major</label>
-                            <select><option>Computer Science</option><option>Software Engineering</option><option>Other</option></select>
-                        </div>
-
-                        <div class="wf-field">
-                            <label>Year</label>
-                            <select><option>1st Year</option><option>2nd Year</option><option selected>3rd Year</option><option>4th Year</option></select>
-                        </div>
-
-                        <div class="wf-field">
-                            <label>Expected Graduation</label>
-                            <input type="month" value="2027-05" />
-                        </div>
-
-                        <div class="wf-field">
-                            <label>Time Zone</label>
-                            <select>
-                                <option>Eastern Time (ET)</option>
-                                <option>Central Time (CT)</option>
-                                <option>Pacific Time (PT)</option>
-                            </select>
-                        </div>
-
-                    </div>
-                </div>
+                </form>
 
             </section>
 
-            <!-- ACCOUNT -->
+            <!-- ===================================
+                 ACCOUNT - ASP.NET CORE IDENTITY
+                 =================================== -->
             <section class="wf-panel wf-settings-panel"
                      data-settings-panel="account" hidden>
 
                 <div class="wf-panel-heading">
-                    <h2>Account Settings</h2>
+                    <h2>Account Information</h2>
                 </div>
 
                 <div class="wf-form-body">
-                    <div class="wf-form-grid">
 
-                        <div class="wf-field">
-                            <label>Display Name</label>
-                            <input value="Alex Student" />
+                    <div class="wf-field">
+                        <label>Signed-in Email</label>
+
+                        <input type="text"
+                               value="@Model.Email"
+                               readonly />
+                    </div>
+
+                    <div class="settings-live-account-row">
+
+                        <div>
+                            <strong>Manage Account</strong>
+
+                            <p>
+                                View your ASP.NET Core Identity
+                                account details.
+                            </p>
                         </div>
 
-                        <div class="wf-field">
-                            <label>Language</label>
-                            <select><option>English</option><option>Arabic</option></select>
-                        </div>
+                        <a class="wf-btn wf-btn-outline"
+                           href="@Url.Page("/Account/Manage/Index", new { area = "Identity" })">
+                            Manage
+                        </a>
 
                     </div>
 
-                    <div class="wf-setting-row">
+                    <div class="settings-live-account-row">
+
                         <div>
                             <strong>Change Password</strong>
-                            <p>Account security will be connected later.</p>
+
+                            <p>
+                                Update your existing account password
+                                through Identity.
+                            </p>
                         </div>
-                        <button class="wf-btn wf-btn-outline" type="button" disabled>
+
+                        <a class="wf-btn wf-btn-outline"
+                           href="@Url.Page("/Account/Manage/ChangePassword", new { area = "Identity" })">
                             Change
-                        </button>
+                        </a>
+
                     </div>
 
-                    <div class="wf-setting-row">
+                    <div class="settings-live-account-row">
+
                         <div>
-                            <strong>Delete Account</strong>
-                            <p>Unavailable in the UI prototype.</p>
+                            <strong>Change Email</strong>
+
+                            <p>
+                                Email changes are managed securely
+                                by ASP.NET Core Identity.
+                            </p>
                         </div>
-                        <button class="wf-btn wf-btn-danger" type="button" disabled>
-                            Delete Account
-                        </button>
+
+                        <a class="wf-btn wf-btn-outline"
+                           href="@Url.Page("/Account/Manage/Email", new { area = "Identity" })">
+                            Manage Email
+                        </a>
+
                     </div>
 
                 </div>
 
             </section>
 
-            <!-- NOTIFICATION SETTINGS -->
+            <!-- ===================================
+                 NOTIFICATIONS - REAL DATABASE FORM
+                 =================================== -->
             <section class="wf-panel wf-settings-panel"
                      data-settings-panel="notifications" hidden>
 
                 <div class="wf-panel-heading">
                     <h2>Notification Preferences</h2>
-                    <a href="@Url.Action("Notifications","Workspace")">
-                        View Notifications →
+
+                    <a href="@Url.Action("Index", "Notifications")">
+                        View Notifications
                     </a>
                 </div>
 
-                <div class="wf-form-body">
+                <form method="post"
+                      action="@Url.Action("SaveNotifications", "Settings")">
 
-                    <div class="wf-setting-row">
-                        <div><strong>Email Alerts</strong><p>Receive task and project alerts by email.</p></div>
-                        <input type="checkbox" checked />
+                    @Html.AntiForgeryToken()
+
+                    <div class="wf-form-body">
+
+                        <div class="wf-setting-row">
+
+                            <div>
+                                <strong>Email Alerts</strong>
+                                <p>Allow future email notification delivery.</p>
+                            </div>
+
+                            <input type="checkbox"
+                                   name="emailAlerts"
+                                   value="true"
+                                   checked="@Model.Profile.EmailAlerts" />
+
+                        </div>
+
+                        <div class="wf-setting-row">
+
+                            <div>
+                                <strong>Task Reminders</strong>
+                                <p>Save your preference for deadline reminders.</p>
+                            </div>
+
+                            <input type="checkbox"
+                                   name="taskReminders"
+                                   value="true"
+                                   checked="@Model.Profile.TaskReminders" />
+
+                        </div>
+
+                        <div class="wf-setting-row">
+
+                            <div>
+                                <strong>Team Updates</strong>
+                                <p>Save your preference for team activity updates.</p>
+                            </div>
+
+                            <input type="checkbox"
+                                   name="teamUpdates"
+                                   value="true"
+                                   checked="@Model.Profile.TeamUpdates" />
+
+                        </div>
+
+                        <div class="wf-setting-row">
+
+                            <div>
+                                <strong>Weekly Summary</strong>
+                                <p>Allow future weekly progress summaries.</p>
+                            </div>
+
+                            <input type="checkbox"
+                                   name="weeklySummary"
+                                   value="true"
+                                   checked="@Model.Profile.WeeklySummary" />
+
+                        </div>
+
+                        <p class="settings-live-note">
+                            These preferences are saved in SQL Server.
+                            Automatic email and push delivery are not
+                            implemented yet.
+                        </p>
+
+                        <div class="settings-live-actions">
+                            <button type="submit"
+                                    class="wf-btn wf-btn-primary">
+                                Save Preferences
+                            </button>
+                        </div>
+
                     </div>
 
-                    <div class="wf-setting-row">
-                        <div><strong>Task Reminders</strong><p>Get reminded before deadlines.</p></div>
-                        <input type="checkbox" checked />
-                    </div>
-
-                    <div class="wf-setting-row">
-                        <div><strong>Team Updates</strong><p>Receive information about team activity.</p></div>
-                        <input type="checkbox" checked />
-                    </div>
-
-                    <div class="wf-setting-row">
-                        <div><strong>Weekly Summary</strong><p>Receive a weekly progress report.</p></div>
-                        <input type="checkbox" />
-                    </div>
-
-                    <button type="button"
-                            class="wf-btn wf-btn-primary"
-                            data-demo-save>
-                        Save Preferences
-                    </button>
-
-                </div>
+                </form>
 
             </section>
 
-            <!-- APPEARANCE -->
+            <!-- ===================================
+                 APPEARANCE - FUTURE FEATURE
+                 =================================== -->
             <section class="wf-panel wf-settings-panel"
                      data-settings-panel="appearance" hidden>
 
@@ -261,34 +482,26 @@
                 </div>
 
                 <div class="wf-form-body">
+
                     <div class="wf-field">
-                        <label>Theme</label>
+                        <label>Current Theme</label>
 
-                        <select id="themePreview">
-                            <option>Light (Current)</option>
-                            <option>Dark (Coming Soon)</option>
-                            <option>System Default (Coming Soon)</option>
-                        </select>
+                        <input value="Light Theme"
+                               readonly />
                     </div>
 
-                    <div class="wf-setting-row">
-                        <div>
-                            <strong>Compact Layout</strong>
-                            <p>Preview a preference for denser spacing.</p>
-                        </div>
-                        <input type="checkbox" />
-                    </div>
-
-                    <button type="button" class="wf-btn wf-btn-primary"
-                            data-demo-save>
-                        Save Appearance
-                    </button>
+                    <p class="settings-live-note">
+                        Dark theme and personal appearance preferences
+                        will be implemented in a future phase.
+                    </p>
 
                 </div>
 
             </section>
 
-            <!-- PRIVACY AND SECURITY -->
+            <!-- ===================================
+                 PRIVACY & SECURITY
+                 =================================== -->
             <section class="wf-panel wf-settings-panel"
                      data-settings-panel="privacy" hidden>
 
@@ -298,43 +511,65 @@
 
                 <div class="wf-form-body">
 
-                    <div class="wf-setting-row">
+                    <div class="settings-live-account-row">
+
                         <div>
-                            <strong>Two-Factor Authentication</strong>
-                            <p>Additional account protection.</p>
+                            <strong>Account Security</strong>
+
+                            <p>
+                                Manage the password and security
+                                features available in Identity.
+                            </p>
                         </div>
-                        <button class="wf-btn wf-btn-outline"
-                                type="button" disabled>
-                            Set Up
-                        </button>
+
+                        <a class="wf-btn wf-btn-outline"
+                           href="@Url.Page("/Account/Manage/Index", new { area = "Identity" })">
+                            Open Identity
+                        </a>
+
                     </div>
 
-                    <div class="wf-setting-row">
-                        <div>
-                            <strong>Active Sessions</strong>
-                            <p>Review signed-in devices in the future.</p>
-                        </div>
-                        <button class="wf-btn wf-btn-outline"
-                                type="button" disabled>
-                            View Sessions
-                        </button>
-                    </div>
+                    <div class="settings-live-account-row">
 
-                    <div class="wf-setting-row">
                         <div>
                             <strong>Export My Data</strong>
-                            <p>Account export will be implemented later.</p>
+                            <p>Atlas data export is not implemented yet.</p>
                         </div>
-                        <button class="wf-btn wf-btn-outline"
-                                type="button" disabled>
-                            Export
+
+                        <button type="button"
+                                class="wf-btn wf-btn-outline"
+                                disabled>
+                            Coming Soon
                         </button>
+
+                    </div>
+
+                    <div class="settings-live-account-row">
+
+                        <div>
+                            <strong>Delete Account</strong>
+
+                            <p>
+                                Account deletion and cleanup of Atlas data
+                                require additional backend work.
+                            </p>
+                        </div>
+
+                        <button type="button"
+                                class="wf-btn wf-btn-danger"
+                                disabled>
+                            Not Available
+                        </button>
+
                     </div>
 
                 </div>
+
             </section>
 
-            <!-- INTEGRATIONS -->
+            <!-- ===================================
+                 INTEGRATIONS - FUTURE FEATURE
+                 =================================== -->
             <section class="wf-panel wf-settings-panel"
                      data-settings-panel="integrations" hidden>
 
@@ -344,98 +579,139 @@
 
                 <div class="wf-form-body">
 
-                    <div class="wf-setting-row">
+                    <div class="settings-live-account-row">
+
                         <div>
                             <strong>Google Calendar</strong>
-                            <p>Synchronize tasks with your calendar.</p>
+                            <p>Calendar synchronization is not connected.</p>
                         </div>
-                        <button class="wf-btn wf-btn-outline"
-                                type="button" disabled>
-                            Connect
-                        </button>
-                    </div>
 
-                    <div class="wf-setting-row">
-                        <div>
-                            <strong>Email Integration</strong>
-                            <p>Receive updates from external email services.</p>
-                        </div>
-                        <button class="wf-btn wf-btn-outline"
-                                type="button" disabled>
-                            Connect
-                        </button>
-                    </div>
-
-                    <div class="wf-setting-row">
-                        <div>
-                            <strong>Other Tools</strong>
-                            <p>Additional integrations will appear here.</p>
-                        </div>
-                        <button class="wf-btn wf-btn-outline"
-                                type="button" disabled>
+                        <button type="button"
+                                class="wf-btn wf-btn-outline"
+                                disabled>
                             Coming Soon
                         </button>
+
+                    </div>
+
+                    <div class="settings-live-account-row">
+
+                        <div>
+                            <strong>Email Integrations</strong>
+                            <p>External email providers are not connected.</p>
+                        </div>
+
+                        <button type="button"
+                                class="wf-btn wf-btn-outline"
+                                disabled>
+                            Coming Soon
+                        </button>
+
                     </div>
 
                 </div>
 
             </section>
 
-        </div>
+        </main>
 
         <!-- RIGHT SIDEBAR -->
         <aside class="wf-side">
 
             <section class="wf-panel">
+
+                <div class="wf-panel-heading">
+                    <h2>Account Overview</h2>
+                </div>
+
+                <div class="settings-live-overview">
+
+                    <span class="wf-avatar wf-avatar-large">
+                        @(Model.Profile.FullName.Length > 0
+                            ? Model.Profile.FullName.Substring(0, 1).ToUpper()
+                            : "U")
+                    </span>
+
+                    <strong>@Model.Profile.FullName</strong>
+
+                    <small>@Model.Email</small>
+
+                    <p>
+                        Profile data is associated with your
+                        signed-in Identity account.
+                    </p>
+
+                </div>
+
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+
                 <div class="wf-panel-heading">
                     <h2>Quick Actions</h2>
                 </div>
 
                 <div class="wf-quick-links">
-                    <button type="button" data-settings-go="account">
+
+                    <button type="button"
+                            data-settings-go="profile">
+                        Edit Profile
+                    </button>
+
+                    <button type="button"
+                            data-settings-go="notifications">
+                        Notification Preferences
+                    </button>
+
+                    <button type="button"
+                            data-settings-go="account">
                         Account Settings
                     </button>
 
-                    <button type="button" data-settings-go="notifications">
-                        Notification Settings
-                    </button>
-
-                    <button type="button" data-settings-go="appearance">
-                        Appearance
-                    </button>
-
-                    <a href="@Url.Action("Help","Workspace")">
-                        Help &amp; Support
+                    <a href="@Url.Action("Index", "Dashboard")">
+                        Back to Dashboard
                     </a>
+
                 </div>
+
             </section>
 
             <section class="wf-panel wf-section-gap">
+
                 <div class="wf-panel-heading">
-                    <h2>Account Usage</h2>
+                    <h2>Account Help</h2>
                 </div>
 
-                <div class="wf-progress-list">
-                    <label>Projects <small>2 / 10 (Preview)</small></label>
-                    <div class="wf-progress"><span style="width:20%"></span></div>
+                <div class="wf-mini-activity">
 
-                    <label>Tasks <small>42 / 100 (Preview)</small></label>
-                    <div class="wf-progress"><span style="width:42%"></span></div>
+                    <p>
+                        Account credentials are managed by Identity.
+                    </p>
 
-                    <label>Team Members <small>4 / 10 (Preview)</small></label>
-                    <div class="wf-progress"><span style="width:40%"></span></div>
+                    <p>
+                        Personal profile fields are stored in
+                        AtlasTaskFlowDb.
+                    </p>
+
+                    <p>
+                        Notification delivery preferences are saved,
+                        but delivery automation is not active.
+                    </p>
+
+                    <p>
+                        <a href="@Url.Action("Help", "Workspace")">
+                            Open Help Center
+                        </a>
+                    </p>
+
                 </div>
+
             </section>
 
         </aside>
 
     </div>
 
-    <div id="settingsDemoMessage" class="wf-demo-message"
-         role="status" hidden>
-        Wireframe preview: your changes have not been saved.
-    </div>
-
 </div>
 
-<script src="@Url.Content("~/js/workspace.js")"></script>
+<script src="~/js/workspace.js"></script>

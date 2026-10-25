@@ -378,11 +378,14 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
 
+
+        // Redirect the old Settings URL to the real Settings controller
         [HttpGet]
         public IActionResult Settings()
         {
-            return View();
+            return RedirectToAction("Index", "Settings");
         }
+
 
         [HttpGet]
         public IActionResult Help()

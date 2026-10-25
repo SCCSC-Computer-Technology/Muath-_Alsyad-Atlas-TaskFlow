@@ -1,0 +1,134 @@
+﻿
+/* App #1 - Atlas TaskFlow - Live Settings */
+
+.settings-live-message {
+    margin-bottom: 16px;
+    padding: 14px 17px;
+    border: 1px solid;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.settings-success {
+    color: #15803d;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.settings-error {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.settings-live-status {
+    color: #15803d;
+    background: #dcfce7;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.settings-live-note {
+    display: block;
+    font-size: 11px;
+    line-height: 1.7;
+    color: #8190a7;
+}
+
+.settings-live-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #edf2f7;
+}
+
+.settings-live-account-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 19px 0;
+    border-bottom: 1px solid #e8edf5;
+}
+
+    .settings-live-account-row:last-child {
+        border-bottom: none;
+    }
+
+    .settings-live-account-row strong {
+        color: #263954;
+        font-size: 13px;
+    }
+
+    .settings-live-account-row p {
+        margin: 7px 0 0;
+        font-size: 11px;
+        line-height: 1.6;
+        color: #8492a8;
+    }
+
+    .settings-live-account-row .wf-btn {
+        flex-shrink: 0;
+    }
+
+.settings-live-overview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    padding: 25px 17px;
+    text-align: center;
+}
+
+    .settings-live-overview strong {
+        color: #21334f;
+        font-size: 15px;
+    }
+
+    .settings-live-overview small {
+        color: #64748b;
+        font-size: 11px;
+        overflow-wrap: anywhere;
+    }
+
+    .settings-live-overview p {
+        margin: 10px 0 0;
+        color: #8492a8;
+        line-height: 1.7;
+        font-size: 11px;
+    }
+
+.wf-settings-panel .wf-field {
+    min-width: 0;
+}
+
+    .wf-settings-panel .wf-field input[readonly] {
+        color: #7b8ba3;
+        background: #f4f7fb;
+        cursor: default;
+    }
+
+.wf-settings-panel .wf-setting-row input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+    cursor: pointer;
+}
+
+@media (max-width: 640px) {
+    .settings-live-account-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .settings-live-actions {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

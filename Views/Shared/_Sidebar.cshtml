@@ -20,8 +20,10 @@
     bool isCalendar = controller == "Workspace"
                       && action == "Calendar";
 
-    bool isNotifications = controller == "Workspace"
-                           && action == "Notifications";
+    bool isSettings =
+    controller == "Settings" ||
+    (controller == "Workspace" && action == "Settings");
+
 
     bool isSettings = controller == "Workspace"
                       && action == "Settings";

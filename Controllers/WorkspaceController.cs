@@ -370,11 +370,13 @@ namespace Atlas_TaskFlow_App.Controllers
         // REMAINING UI PREVIEW PAGES
         // ==========================================
 
+
         [HttpGet]
         public IActionResult Notifications()
         {
-            return View();
+            return RedirectToAction("Index", "Notifications");
         }
+
 
         [HttpGet]
         public IActionResult Settings()

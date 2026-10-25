@@ -1,0 +1,542 @@
+﻿
+/* App #1 - Atlas TaskFlow - My Tasks Styles */
+
+.mytasks-page {
+    padding: 22px;
+    color: #17243c;
+}
+
+.mytasks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+    .mytasks-header h1 {
+        margin: 0 0 5px;
+        font-size: 26px;
+        font-weight: 700;
+        color: #101e35;
+    }
+
+    .mytasks-header p {
+        margin: 0;
+        font-size: 13px;
+        color: #8291a9;
+    }
+
+.mytasks-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mytasks-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border: 1px solid #2563eb;
+    border-radius: 9px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .mytasks-primary-btn:hover {
+        background: #1d4ed8;
+    }
+
+.mytasks-export-btn,
+.mytasks-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 15px;
+    border: 1px solid #d7e0ed;
+    border-radius: 8px;
+    background: white;
+    color: #526581;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* FILTERS */
+
+.mytasks-filters {
+    padding: 14px;
+    margin-bottom: 18px;
+    border: 1px solid #dae3ef;
+    border-radius: 12px;
+    background: white;
+}
+
+.mytasks-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+}
+
+    .mytasks-filter-row input,
+    .mytasks-filter-row select {
+        min-height: 38px;
+        max-width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #dbe3ef;
+        border-radius: 7px;
+        background: white;
+        color: #526581;
+        font-size: 12px;
+    }
+
+        .mytasks-filter-row input[type="search"] {
+            flex: 1 1 175px;
+            min-width: 150px;
+        }
+
+    .mytasks-filter-row select {
+        flex: 1 1 120px;
+        min-width: 110px;
+    }
+
+.mytasks-filter-btn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.mytasks-quick-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.mytasks-tab {
+    padding: 7px 15px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    background: #f2f5fa;
+    color: #61718d;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+    .mytasks-tab.active {
+        background: #edf3ff;
+        color: #2563eb;
+        border-color: #2563eb;
+    }
+
+/* LAYOUT */
+
+.mytasks-content {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.mytasks-main,
+.mytasks-sidebar {
+    min-width: 0;
+}
+
+.mytasks-panel {
+    border: 1px solid #dae3ef;
+    border-radius: 12px;
+    background: white;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.mytasks-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border-bottom: 1px solid #dae3ef;
+}
+
+    .mytasks-panel-header h2 {
+        margin: 0;
+        font-size: 15px;
+        color: #15233d;
+    }
+
+    .mytasks-panel-header span {
+        color: #8291a9;
+        font-size: 11px;
+    }
+
+/* TASK TABLE */
+
+.mytasks-table-scroll {
+    overflow-x: auto;
+}
+
+.mytasks-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+    .mytasks-table th {
+        padding: 13px 12px;
+        text-align: left;
+        background: #f6f8fc;
+        color: #64748b;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    .mytasks-table td {
+        padding: 13px 12px;
+        border-top: 1px solid #e6ecf5;
+        color: #5b6b87;
+    }
+
+    .mytasks-table tbody tr:hover {
+        background: #f8faff;
+    }
+
+.mytasks-title-cell {
+    color: #17243c !important;
+    font-weight: 600;
+}
+
+.mytasks-empty {
+    text-align: center;
+    padding: 30px !important;
+    color: #94a3b8 !important;
+}
+
+.mytasks-priority,
+.mytasks-status {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.priority-high {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.priority-medium {
+    background: #fff7df;
+    color: #d97706;
+}
+
+.priority-low {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.priority-urgent {
+    background: #f3e8ff;
+    color: #7c3aed;
+}
+
+.status-todo {
+    background: #edf2f8;
+    color: #64748b;
+}
+
+.status-progress {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.status-completed {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.mytasks-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .mytasks-row-actions form {
+        margin: 0;
+    }
+
+.mytasks-edit-link,
+.mytasks-delete-btn {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.mytasks-edit-link {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.mytasks-delete-btn {
+    border: none;
+    background: #fef2f2;
+    color: #dc2626;
+    cursor: pointer;
+}
+
+/* SUMMARY CARDS */
+
+.mytasks-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 14px;
+}
+
+.mytasks-summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 16px;
+    border: 1px solid #e0e8f4;
+    border-radius: 10px;
+}
+
+    .mytasks-summary-card strong {
+        font-size: 23px;
+        color: #15233d;
+    }
+
+    .mytasks-summary-card span {
+        color: #71829c;
+        font-size: 12px;
+    }
+
+.mytasks-completion {
+    padding: 17px 14px;
+    border-top: 1px solid #e6ecf5;
+}
+
+.mytasks-completion-heading {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 11px;
+    font-size: 13px;
+}
+
+    .mytasks-completion-heading span {
+        color: #2563eb;
+        font-weight: 700;
+    }
+
+.mytasks-progress-track {
+    height: 8px;
+    background: #e8edf5;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.mytasks-progress-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 20px;
+}
+
+.mytasks-completion p {
+    color: #8491a5;
+    font-size: 11px;
+    margin: 9px 0 0;
+}
+
+/* DEADLINES */
+
+.mytasks-deadlines {
+    padding: 8px 14px 16px;
+}
+
+.mytasks-deadline-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 0;
+    font-size: 12px;
+}
+
+.mytasks-deadline-dot {
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #ef4444;
+}
+
+.mytasks-deadline-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #273244;
+}
+
+.mytasks-deadline-date {
+    color: #64748b;
+    white-space: nowrap;
+}
+
+/* QUICK NOTES */
+
+.mytasks-tips h3 {
+    margin: 12px 0;
+    font-size: 14px;
+}
+
+.mytasks-tip-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.mytasks-tip {
+    padding: 14px;
+    border: 1px solid;
+    border-radius: 9px;
+}
+
+    .mytasks-tip strong {
+        font-size: 12px;
+    }
+
+    .mytasks-tip p {
+        font-size: 11px;
+        line-height: 1.5;
+        margin: 7px 0 0;
+    }
+
+.tip-blue {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.tip-green {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.tip-orange {
+    background: #fffbeb;
+    border-color: #fcd34d;
+}
+
+/* EDIT FORM */
+
+.mytasks-edit-card {
+    max-width: 850px;
+    padding: 24px;
+    border: 1px solid #dae3ef;
+    border-radius: 12px;
+    background: white;
+}
+
+    .mytasks-edit-card h2 {
+        margin: 0 0 25px;
+        font-size: 18px;
+    }
+
+.mytasks-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.mytasks-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .mytasks-edit-field label {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .mytasks-edit-field input,
+    .mytasks-edit-field select,
+    .mytasks-edit-field textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px;
+        border: 1px solid #dae3ef;
+        border-radius: 7px;
+        font: inherit;
+        font-size: 13px;
+    }
+
+.mytasks-edit-wide {
+    grid-column: 1 / -1;
+}
+
+.mytasks-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.mytasks-success-message {
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+}
+
+.mytasks-error-message {
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1050px) {
+    .mytasks-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .mytasks-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mytasks-edit-grid,
+    .mytasks-tip-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mytasks-page {
+        padding: 15px;
+    }
+}

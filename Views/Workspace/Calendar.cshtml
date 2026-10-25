@@ -1,0 +1,285 @@
+﻿
+@* App #1 - Atlas TaskFlow - Calendar Wireframe *@
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Calendar";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+}
+
+<div class="wf-page">
+
+    <div class="wf-heading">
+        <div>
+            <h1>Calendar</h1>
+            <p>View and manage your tasks, deadlines, and team events.</p>
+        </div>
+
+        <button type="button" class="wf-btn wf-btn-primary"
+                disabled title="Event creation will be developed later">
+            + New Event
+        </button>
+    </div>
+
+    <div class="wf-demo-label">
+        Calendar Preview — events are sample data, not SQL Server records.
+    </div>
+
+    <div class="wf-layout">
+
+        <div class="wf-main">
+
+            <!-- CALENDAR -->
+            <section class="wf-panel">
+
+                <div class="wf-calendar-toolbar">
+
+                    <div class="wf-calendar-month-controls">
+
+                        <button type="button"
+                                data-calendar-shift="-1"
+                                aria-label="Previous month">
+                            ‹
+                        </button>
+
+                        <button type="button"
+                                data-calendar-today>
+                            Today
+                        </button>
+
+                        <button type="button"
+                                data-calendar-shift="1"
+                                aria-label="Next month">
+                            ›
+                        </button>
+
+                        <strong id="calendarMonthLabel">October 2026</strong>
+                    </div>
+
+                    <div class="wf-view-switch">
+
+                        <button type="button" class="active"
+                                data-calendar-view-btn="month">
+                            Month
+                        </button>
+
+                        <button type="button"
+                                data-calendar-view-btn="week">
+                            Week
+                        </button>
+
+                        <button type="button"
+                                data-calendar-view-btn="day">
+                            Day
+                        </button>
+
+                        <button type="button"
+                                data-calendar-view-btn="list">
+                            List
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- MONTH VIEW -->
+                <div data-calendar-panel="month">
+
+                    <div class="wf-weekdays">
+                        <span>Sun</span>
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                    </div>
+
+                    <div id="calendarGrid" class="wf-calendar-grid"></div>
+
+                </div>
+
+                <!-- WEEK VIEW -->
+                <div data-calendar-panel="week" hidden>
+                    <div class="wf-alternate-calendar">
+                        <h3>This Week — Preview</h3>
+                        <p>Select Month for the complete interactive month grid.</p>
+
+                        <div class="wf-event-row">
+                            <span class="wf-dot blue"></span>
+                            Project planning meeting
+                        </div>
+                        <div class="wf-event-row">
+                            <span class="wf-dot red"></span>
+                            Finish project proposal
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DAY VIEW -->
+                <div data-calendar-panel="day" hidden>
+                    <div class="wf-alternate-calendar">
+                        <h3>Day View — Preview</h3>
+                        <p>Selected date: <strong id="calendarDayLabel">Today</strong></p>
+                        <p id="calendarDayDetails">
+                            Select a date from Month view to view sample events.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- LIST VIEW -->
+                <div data-calendar-panel="list" hidden>
+                    <div class="wf-alternate-calendar">
+                        <h3>Event List — Preview</h3>
+
+                        <div class="wf-event-row">
+                            <span class="wf-dot blue"></span>
+                            Write project proposal — Oct 20
+                        </div>
+                        <div class="wf-event-row">
+                            <span class="wf-dot orange"></span>
+                            Research user needs — Oct 22
+                        </div>
+                        <div class="wf-event-row">
+                            <span class="wf-dot purple"></span>
+                            Create wireframes — Oct 24
+                        </div>
+                        <div class="wf-event-row">
+                            <span class="wf-dot red"></span>
+                            Review project design — Oct 28
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- TASKS DUE THIS WEEK -->
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Tasks Due This Week</h2>
+
+                    <a href="@Url.Action("Index","Tasks")">
+                        View All →
+                    </a>
+                </div>
+
+                <div class="wf-table-scroll">
+
+                    <table class="wf-table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td><strong>Research user needs</strong></td>
+                                <td>UX Design</td>
+                                <td>Oct 22</td>
+                                <td><span class="wf-pill wf-medium">Medium</span></td>
+                                <td>To Do</td>
+                            </tr>
+
+                            <tr>
+                                <td><strong>Create wireframes</strong></td>
+                                <td>UX Design</td>
+                                <td>Oct 24</td>
+                                <td><span class="wf-pill wf-high">High</span></td>
+                                <td>To Do</td>
+                            </tr>
+
+                            <tr>
+                                <td><strong>Review project design</strong></td>
+                                <td>UX Design</td>
+                                <td>Oct 28</td>
+                                <td><span class="wf-pill wf-green">Low</span></td>
+                                <td>To Do</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="wf-side">
+
+            <section class="wf-panel">
+
+                <div class="wf-panel-heading">
+                    <h2>Upcoming Events</h2>
+                    <a href="@Url.Action("Index","Tasks")">View Tasks →</a>
+                </div>
+
+                <div class="wf-event-list" id="calendarUpcoming">
+                    <div class="wf-event-item">
+                        <span class="wf-dot blue"></span>
+                        <div>
+                            <strong>Write project proposal</strong>
+                            <small>Oct 20, 2026</small>
+                        </div>
+                    </div>
+
+                    <div class="wf-event-item">
+                        <span class="wf-dot orange"></span>
+                        <div>
+                            <strong>Research user needs</strong>
+                            <small>Oct 22, 2026</small>
+                        </div>
+                    </div>
+
+                    <div class="wf-event-item">
+                        <span class="wf-dot purple"></span>
+                        <div>
+                            <strong>Create wireframes</strong>
+                            <small>Oct 24, 2026</small>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Calendar Filters</h2>
+                </div>
+
+                <div class="wf-settings-list">
+                    <label><input type="checkbox" data-cal-type="task" checked /> My Tasks</label>
+                    <label><input type="checkbox" data-cal-type="team" checked /> Team Tasks</label>
+                    <label><input type="checkbox" data-cal-type="deadline" checked /> Project Deadlines</label>
+                    <label><input type="checkbox" data-cal-type="event" checked /> Team Events</label>
+                </div>
+
+                <div class="wf-divider"></div>
+
+                <a class="wf-btn wf-btn-outline wf-full-button"
+                   href="@Url.Action("Index","Projects")">
+                    View Projects
+                </a>
+
+                <a class="wf-btn wf-btn-outline wf-full-button"
+                   href="@Url.Action("TeamTasks","Workspace")">
+                    View Team Tasks
+                </a>
+
+            </section>
+
+        </aside>
+
+    </div>
+</div>
+
+<script src="@Url.Content("~/js/workspace.js")"></script>

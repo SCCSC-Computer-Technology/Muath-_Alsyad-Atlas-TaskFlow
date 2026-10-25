@@ -1,0 +1,298 @@
+﻿
+@* App #1 - Atlas TaskFlow - Team Tasks Wireframe *@
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Team Tasks";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+}
+
+<div class="wf-page">
+
+    <div class="wf-heading">
+        <div>
+            <h1>Team Tasks</h1>
+            <p>Work together, stay organized, and track team progress.</p>
+        </div>
+
+        <div class="wf-actions">
+            <a class="wf-btn wf-btn-primary"
+               href="@Url.Action("Index", "Tasks")">
+                + New Task
+            </a>
+
+            <button type="button" class="wf-btn wf-btn-outline"
+                    disabled title="Team invitations will be developed later">
+                Invite Member
+            </button>
+        </div>
+    </div>
+
+    <div class="wf-demo-label">
+        UI Preview — team assignments are sample data.
+    </div>
+
+    <!-- FILTERS -->
+    <section class="wf-panel wf-filter-panel">
+
+        <div class="wf-filter-row">
+
+            <input class="wf-input wf-search"
+                   type="search"
+                   id="teamSearch"
+                   placeholder="Search team tasks..." />
+
+            <select class="wf-select" id="teamProject">
+                <option value="">All Projects</option>
+                <option>Web Development</option>
+                <option>UX Design</option>
+                <option>Group Project</option>
+            </select>
+
+            <select class="wf-select" id="teamMember">
+                <option value="">All Members</option>
+                <option>Alex</option>
+                <option>Taylor</option>
+                <option>Jordan</option>
+                <option>Jamie</option>
+            </select>
+
+            <select class="wf-select" id="teamPriority">
+                <option value="">All Priorities</option>
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+            </select>
+
+            <select class="wf-select" id="teamStatus">
+                <option value="">All Statuses</option>
+                <option>To Do</option>
+                <option>In Progress</option>
+                <option>Review</option>
+                <option>Completed</option>
+            </select>
+
+        </div>
+
+        <div class="wf-chips" id="teamChips">
+            <button type="button" class="wf-chip active" data-team-tab="All">All</button>
+            <button type="button" class="wf-chip" data-team-tab="To Do">To Do</button>
+            <button type="button" class="wf-chip" data-team-tab="In Progress">In Progress</button>
+            <button type="button" class="wf-chip" data-team-tab="Review">Review</button>
+            <button type="button" class="wf-chip" data-team-tab="Completed">Completed</button>
+        </div>
+
+    </section>
+
+    <div class="wf-layout">
+
+        <!-- LEFT COLUMN -->
+        <div class="wf-main">
+
+            <section class="wf-panel">
+
+                <div class="wf-panel-heading">
+                    <h2>Team Task List</h2>
+
+                    <a href="@Url.Action("Index", "Tasks")">
+                        View All Tasks →
+                    </a>
+                </div>
+
+                <div class="wf-table-scroll">
+
+                    <table class="wf-table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Assigned To</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="teamTaskRows">
+
+                            <tr data-team-row data-project="Web Development"
+                                data-member="Jordan" data-priority="High"
+                                data-status="In Progress">
+                                <td><strong>Design homepage</strong></td>
+                                <td>Web Development</td>
+                                <td>Jordan</td>
+                                <td>Oct 25, 2026</td>
+                                <td><span class="wf-pill wf-high">High</span></td>
+                                <td><span class="wf-pill wf-blue">In Progress</span></td>
+                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
+                            </tr>
+
+                            <tr data-team-row data-project="UX Design"
+                                data-member="Taylor" data-priority="High"
+                                data-status="To Do">
+                                <td><strong>User research</strong></td>
+                                <td>UX Design</td>
+                                <td>Taylor</td>
+                                <td>Oct 26, 2026</td>
+                                <td><span class="wf-pill wf-high">High</span></td>
+                                <td><span class="wf-pill wf-gray">To Do</span></td>
+                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
+                            </tr>
+
+                            <tr data-team-row data-project="UX Design"
+                                data-member="Alex" data-priority="Medium"
+                                data-status="To Do">
+                                <td><strong>Create wireframes</strong></td>
+                                <td>UX Design</td>
+                                <td>Alex</td>
+                                <td>Oct 27, 2026</td>
+                                <td><span class="wf-pill wf-medium">Medium</span></td>
+                                <td><span class="wf-pill wf-gray">To Do</span></td>
+                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
+                            </tr>
+
+                            <tr data-team-row data-project="Web Development"
+                                data-member="Jamie" data-priority="Medium"
+                                data-status="In Progress">
+                                <td><strong>API documentation</strong></td>
+                                <td>Web Development</td>
+                                <td>Jamie</td>
+                                <td>Oct 28, 2026</td>
+                                <td><span class="wf-pill wf-medium">Medium</span></td>
+                                <td><span class="wf-pill wf-blue">In Progress</span></td>
+                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
+                            </tr>
+
+                            <tr data-team-row data-project="Group Project"
+                                data-member="Taylor" data-priority="Medium"
+                                data-status="Completed">
+                                <td><strong>Prepare presentation</strong></td>
+                                <td>Group Project</td>
+                                <td>Taylor</td>
+                                <td>Oct 30, 2026</td>
+                                <td><span class="wf-pill wf-medium">Medium</span></td>
+                                <td><span class="wf-pill wf-green">Completed</span></td>
+                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
+                            </tr>
+
+                            <tr data-team-row data-project="Web Development"
+                                data-member="Jamie" data-priority="Low"
+                                data-status="Review">
+                                <td><strong>Test application</strong></td>
+                                <td>Web Development</td>
+                                <td>Jamie</td>
+                                <td>Nov 01, 2026</td>
+                                <td><span class="wf-pill wf-green">Low</span></td>
+                                <td><span class="wf-pill wf-purple">Review</span></td>
+                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <p class="wf-empty" id="teamEmpty" hidden>
+                    No sample tasks match your filters.
+                </p>
+
+            </section>
+
+            <!-- UPCOMING DEADLINES -->
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Team Upcoming Deadlines</h2>
+
+                    <a href="@Url.Action("Calendar","Workspace")">
+                        View Calendar →
+                    </a>
+                </div>
+
+                <div class="wf-list">
+                    <div class="wf-list-item">
+                        <span class="wf-dot red"></span>
+                        <strong>Design homepage</strong>
+                        <span>Web Development</span>
+                        <small>Oct 25</small>
+                    </div>
+
+                    <div class="wf-list-item">
+                        <span class="wf-dot red"></span>
+                        <strong>User research</strong>
+                        <span>UX Design</span>
+                        <small>Oct 26</small>
+                    </div>
+
+                    <div class="wf-list-item">
+                        <span class="wf-dot orange"></span>
+                        <strong>API documentation</strong>
+                        <span>Web Development</span>
+                        <small>Oct 28</small>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <aside class="wf-side">
+
+            <section class="wf-panel">
+                <div class="wf-panel-heading">
+                    <h2>Team Members</h2>
+                    <a href="@Url.Action("Settings","Workspace")">View Settings →</a>
+                </div>
+
+                <div class="wf-members">
+                    <div class="wf-member"><span class="wf-avatar">AS</span><div><strong>Alex Student</strong><small>Team Member</small></div><i class="wf-online"></i></div>
+                    <div class="wf-member"><span class="wf-avatar">TS</span><div><strong>Taylor Smith</strong><small>Team Member</small></div><i class="wf-online"></i></div>
+                    <div class="wf-member"><span class="wf-avatar">JD</span><div><strong>Jamie Davis</strong><small>Team Member</small></div><i class="wf-away"></i></div>
+                    <div class="wf-member"><span class="wf-avatar">JL</span><div><strong>Jordan Lee</strong><small>Team Member</small></div><i class="wf-offline"></i></div>
+                </div>
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+                <div class="wf-panel-heading">
+                    <h2>Project Progress</h2>
+                    <a href="@Url.Action("Index","Projects")">View Projects →</a>
+                </div>
+
+                <div class="wf-progress-list">
+                    <label>Web Development <small>60%</small></label>
+                    <div class="wf-progress"><span style="width:60%"></span></div>
+
+                    <label>UX Design <small>40%</small></label>
+                    <div class="wf-progress"><span style="width:40%"></span></div>
+
+                    <label>Group Project <small>20%</small></label>
+                    <div class="wf-progress"><span style="width:20%"></span></div>
+                </div>
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+                <div class="wf-panel-heading">
+                    <h2>Recent Team Activity</h2>
+                    <a href="@Url.Action("Notifications","Workspace")">
+                        View All →
+                    </a>
+                </div>
+
+                <div class="wf-mini-activity">
+                    <p>Jordan completed <strong>Research notes</strong>.</p>
+                    <p>Taylor commented on <strong>Design homepage</strong>.</p>
+                    <p>Jamie joined <strong>Web Development</strong>.</p>
+                </div>
+            </section>
+
+        </aside>
+
+    </div>
+</div>
+
+<script src="@Url.Content("~/js/workspace.js")"></script>

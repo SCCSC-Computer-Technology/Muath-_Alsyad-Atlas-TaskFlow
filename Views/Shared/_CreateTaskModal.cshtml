@@ -1,0 +1,639 @@
+﻿@* App #1 - Atlas TaskFlow - Create Task Modal *@
+
+@using Atlas_TaskFlow_App.Models
+
+@{
+    var projects = ViewBag.ProjectList as List<Project>
+                   ?? new List<Project>();
+
+    var taskError = TempData["CreateTaskError"] as string;
+    var taskSuccess = TempData["CreateTaskSuccess"] as string;
+}
+
+@if (taskSuccess != null)
+{
+    <div class="atlas-task-success" role="status">
+        @taskSuccess
+    </div>
+}
+
+<dialog id="createTaskDialog" class="create-task-modal">
+
+    <!-- HEADER -->
+    <div class="atlas-task-header">
+        <h2>Create New Task</h2>
+        <p>Add task details, deadlines, and team information.</p>
+    </div>
+
+    @if (taskError != null)
+    {
+        <p class="atlas-task-error" role="alert">
+            @taskError
+        </p>
+    }
+
+    <!-- FORM -->
+    <form id="createTaskForm"
+          method="post"
+          action="@Url.Action("Create", "Tasks")">
+
+        @Html.AntiForgeryToken()
+
+        <div class="atlas-task-grid">
+
+            <!-- LEFT COLUMN -->
+            <div class="atlas-task-column">
+
+                <!-- TITLE -->
+                <div class="atlas-task-field">
+                    <label for="taskTitle">
+                        Task Title <span class="required">*</span>
+                    </label>
+
+                    <input type="text"
+                           id="taskTitle"
+                           name="Title"
+                           maxlength="200"
+                           placeholder="Enter a clear and concise task title..."
+                           required />
+                </div>
+
+                <!-- PROJECT -->
+                <div class="atlas-task-field">
+                    <label for="taskProject">
+                        Project <span class="required">*</span>
+                    </label>
+
+                    <select id="taskProject"
+                            name="ProjectId"
+                            required>
+
+                        <option value="">Select a project...</option>
+
+                        @foreach (var project in projects)
+                        {
+                            <option value="@project.ProjectId">
+                                @project.Name
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+                <!-- DESCRIPTION -->
+                <div class="atlas-task-field">
+                    <label for="taskDescription">Description</label>
+
+                    <textarea id="taskDescription"
+                              name="Description"
+                              maxlength="1000"
+                              rows="4"
+                              placeholder="Add a detailed description..."></textarea>
+                </div>
+
+                <!-- PRIORITY -->
+                <fieldset class="atlas-task-priority">
+
+                    <legend>
+                        Priority <span class="required">*</span>
+                    </legend>
+
+                    <div class="atlas-priority-options">
+
+                        <label>
+                            <input type="radio"
+                                   name="Priority"
+                                   value="Low"
+                                   required />
+                            <span class="priority-dot low"></span>
+                            Low
+                        </label>
+
+                        <label>
+                            <input type="radio"
+                                   name="Priority"
+                                   value="Medium" />
+                            <span class="priority-dot medium"></span>
+                            Medium
+                        </label>
+
+                        <label>
+                            <input type="radio"
+                                   name="Priority"
+                                   value="High" />
+                            <span class="priority-dot high"></span>
+                            High
+                        </label>
+
+                        <label>
+                            <input type="radio"
+                                   name="Priority"
+                                   value="Urgent" />
+                            <span class="priority-dot urgent"></span>
+                            Urgent
+                        </label>
+
+                    </div>
+                </fieldset>
+
+                <!-- TAGS: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label>Tags / Labels</label>
+
+                    <div class="atlas-task-tags">
+                        <span class="tag-blue">Research</span>
+                        <span class="tag-purple">Design</span>
+                        <span class="tag-green">Presentation</span>
+                    </div>
+
+                    <small>Tags are a visual preview.</small>
+                </div>
+
+                <!-- CHECKLIST: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label>Checklist / Subtasks</label>
+
+                    <div class="atlas-task-checklist">
+
+                        <label>
+                            <input type="checkbox" disabled />
+                            <span>Research and gather initial information</span>
+                        </label>
+
+                        <label>
+                            <input type="checkbox" disabled />
+                            <span>Draft initial outline</span>
+                        </label>
+
+                        <label>
+                            <input type="checkbox" disabled />
+                            <span>Review and finalize content</span>
+                        </label>
+
+                    </div>
+
+                    <small>Subtasks coming soon.</small>
+                </div>
+
+                <!-- ATTACHMENTS: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label>Attachments</label>
+
+                    <div class="atlas-task-attachment">
+                        <span class="attachment-icon">📎</span>
+                        <span>File uploads coming soon</span>
+                        <small>PDF, DOCX, XLS, PNG, JPG</small>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="atlas-task-column">
+
+                <!-- ASSIGNEE: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label for="taskAssignee">Assignee</label>
+
+                    <select id="taskAssignee" disabled>
+                        <option>Alex Student (Preview)</option>
+                    </select>
+                </div>
+
+                <!-- DUE DATE -->
+                <div class="atlas-task-field">
+                    <label for="taskDueDate">
+                        Due Date <span class="required">*</span>
+                    </label>
+
+                    <input type="date"
+                           id="taskDueDate"
+                           name="DueDate"
+                           required />
+                </div>
+
+                <!-- START DATE: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label for="taskStartDate">Start Date</label>
+
+                    <input type="date"
+                           id="taskStartDate"
+                           disabled />
+                </div>
+
+                <!-- STATUS -->
+                <div class="atlas-task-field">
+                    <label for="taskStatus">
+                        Status <span class="required">*</span>
+                    </label>
+
+                    <select id="taskStatus"
+                            name="Status"
+                            required>
+
+                        <option value="To Do">To Do</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+
+                    </select>
+                </div>
+
+                <!-- REMINDER: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label for="taskReminder">Reminder</label>
+
+                    <select id="taskReminder" disabled>
+                        <option>None (Preview)</option>
+                    </select>
+                </div>
+
+                <!-- ESTIMATED TIME: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label for="taskTime">Estimated Time</label>
+
+                    <select id="taskTime" disabled>
+                        <option>2 hours (Preview)</option>
+                    </select>
+                </div>
+
+                <!-- TEAM VISIBILITY: PREVIEW ONLY -->
+                <div class="atlas-task-visibility">
+                    <div>
+                        <strong>Team Visibility</strong>
+                        <p>Notifications are not connected yet</p>
+                    </div>
+
+                    <input type="checkbox"
+                           id="taskVisibility"
+                           disabled />
+                </div>
+
+                <!-- ADDITIONAL NOTES: PREVIEW ONLY -->
+                <div class="atlas-task-field">
+                    <label for="taskNotes">Additional Notes</label>
+
+                    <textarea id="taskNotes"
+                              rows="4"
+                              placeholder="Available in a future version..."
+                              disabled></textarea>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- BUTTONS: NO SAVE DRAFT -->
+        <div class="atlas-task-footer">
+
+            <button type="button"
+                    class="atlas-task-cancel"
+                    onclick="document.getElementById('createTaskDialog').close()">
+                Cancel
+            </button>
+
+            <button type="submit"
+                    class="atlas-task-create">
+                Create Task
+            </button>
+
+        </div>
+
+    </form>
+</dialog>
+
+@if (taskError != null)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const dialog = document.getElementById("createTaskDialog");
+
+            if (dialog && !dialog.open) {
+                dialog.showModal();
+            }
+        });
+    </script>
+}
+
+<style>
+    /* WINDOW */
+
+    #createTaskDialog {
+        width: min(850px, 95vw);
+        max-height: 90vh;
+        box-sizing: border-box;
+        padding: 30px;
+        border: none;
+        border-radius: 24px;
+        background: #ffffff;
+        color: #172033;
+        font-family: Arial, sans-serif;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+
+    #createTaskDialog::backdrop {
+        background: rgba(0, 0, 0, 0.55);
+    }
+
+    /* HEADER */
+
+    .atlas-task-header {
+        margin-bottom: 24px;
+    }
+
+    .atlas-task-header h2 {
+        margin: 0 0 8px;
+        font-size: 26px;
+        color: #111827;
+    }
+
+    .atlas-task-header p {
+        margin: 0;
+        font-size: 13px;
+        color: #8491a5;
+    }
+
+    /* COLUMNS */
+
+    .atlas-task-grid {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(min(100%, 280px), 1fr)
+        );
+        gap: 28px;
+    }
+
+    .atlas-task-column {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-width: 0;
+    }
+
+    /* INPUTS */
+
+    .atlas-task-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .atlas-task-field > label,
+    .atlas-task-priority legend {
+        font-size: 14px;
+        font-weight: 500;
+        color: #273244;
+    }
+
+    .atlas-task-field > input,
+    .atlas-task-field > select,
+    .atlas-task-field > textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 12px;
+        border: 1px solid #d9e1ed;
+        border-radius: 7px;
+        background: white;
+        color: #263449;
+        font: inherit;
+        font-size: 13px;
+    }
+
+    .atlas-task-field textarea {
+        resize: vertical;
+    }
+
+    .atlas-task-field input:focus,
+    .atlas-task-field select:focus,
+    .atlas-task-field textarea:focus {
+        outline: 2px solid #bfdbfe;
+        border-color: #2563eb;
+    }
+
+    .atlas-task-field small {
+        color: #8491a5;
+        font-size: 11px;
+    }
+
+    .required {
+        color: #ef4444;
+    }
+
+    /* PRIORITY */
+
+    .atlas-task-priority {
+        padding: 0;
+        margin: 0;
+        border: none;
+        min-width: 0;
+    }
+
+    .atlas-task-priority legend {
+        margin-bottom: 12px;
+    }
+
+    .atlas-priority-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 13px;
+    }
+
+    .atlas-priority-options label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .atlas-priority-options input {
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        accent-color: #2563eb;
+    }
+
+    .priority-dot {
+        width: 9px;
+        height: 9px;
+        display: inline-block;
+        border-radius: 50%;
+    }
+
+    .priority-dot.low {
+        background: #16a34a;
+    }
+
+    .priority-dot.medium {
+        background: #facc15;
+    }
+
+    .priority-dot.high {
+        background: #ef4444;
+    }
+
+    .priority-dot.urgent {
+        background: #7c3aed;
+    }
+
+    /* TAGS */
+
+    .atlas-task-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .atlas-task-tags span {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+    }
+
+    .tag-blue {
+        background: #e8efff;
+        color: #2563eb;
+    }
+
+    .tag-purple {
+        background: #f0e8ff;
+        color: #7c3aed;
+    }
+
+    .tag-green {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    /* CHECKLIST */
+
+    .atlas-task-checklist {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .atlas-task-checklist label {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 10px;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .atlas-task-checklist input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+        margin: 0;
+        padding: 0;
+    }
+
+    .atlas-task-checklist label span {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* ATTACHMENTS */
+
+    .atlas-task-attachment {
+        min-height: 100px;
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        color: #64748b;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .attachment-icon {
+        font-size: 26px;
+    }
+
+    /* VISIBILITY */
+
+    .atlas-task-visibility {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .atlas-task-visibility strong {
+        font-size: 14px;
+    }
+
+    .atlas-task-visibility p {
+        margin: 5px 0 0;
+        font-size: 11px;
+        color: #8491a5;
+    }
+
+    .atlas-task-visibility input {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    /* BUTTONS */
+
+    .atlas-task-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 28px;
+        padding-top: 18px;
+        border-top: 1px solid #edf0f5;
+    }
+
+    .atlas-task-footer button {
+        padding: 11px 22px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .atlas-task-cancel {
+        border: 1px solid #2563eb;
+        color: #ef4444;
+        background: #ffffff;
+    }
+
+    .atlas-task-create {
+        border: 1px solid #2563eb;
+        color: white;
+        background: #2563eb;
+    }
+
+    .atlas-task-create:hover {
+        background: #1d4ed8;
+    }
+
+    /* MESSAGES */
+
+    .atlas-task-error {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        color: #b91c1c;
+        background: #fef2f2;
+    }
+
+    .atlas-task-success {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        padding: 13px 18px;
+        border-radius: 8px;
+        color: #166534;
+        background: #dcfce7;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+</style>

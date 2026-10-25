@@ -1,0 +1,272 @@
+﻿
+@* App #1 - Atlas TaskFlow - Help Center Wireframe *@
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Help";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+}
+
+<div class="wf-page">
+
+    <div class="wf-heading">
+        <div>
+            <h1>Help Center</h1>
+            <p>Find guides, tutorials, and answers about Atlas TaskFlow.</p>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="wf-help-search">
+        <input type="search"
+               id="helpSearch"
+               placeholder="Search for help articles, guides, or topics..." />
+
+        <button type="button"
+                class="wf-btn wf-btn-primary"
+                id="helpSearchButton">
+            Search
+        </button>
+    </div>
+
+    <!-- GETTING STARTED -->
+    <div class="wf-help-categories">
+
+        <a href="@Url.Action("Index","Dashboard")" class="wf-help-category">
+            <span class="wf-category-icon blue">▣</span>
+            <strong>Getting Started</strong>
+            <small>Learn the basics of Atlas TaskFlow.</small>
+            <span>→</span>
+        </a>
+
+        <a href="@Url.Action("Index","Tasks")" class="wf-help-category">
+            <span class="wf-category-icon green">✓</span>
+            <strong>Managing Tasks</strong>
+            <small>Create, organize, and track tasks.</small>
+            <span>→</span>
+        </a>
+
+        <a href="@Url.Action("TeamTasks","Workspace")" class="wf-help-category">
+            <span class="wf-category-icon purple">♧</span>
+            <strong>Team Collaboration</strong>
+            <small>Explore shared team workspaces.</small>
+            <span>→</span>
+        </a>
+
+        <a href="@Url.Action("Settings","Workspace")" class="wf-help-category">
+            <span class="wf-category-icon orange">⚙</span>
+            <strong>Account &amp; Settings</strong>
+            <small>Explore preferences and settings.</small>
+            <span>→</span>
+        </a>
+
+    </div>
+
+    <div class="wf-layout">
+
+        <!-- LEFT -->
+        <div class="wf-main">
+
+            <section class="wf-panel">
+
+                <div class="wf-panel-heading">
+                    <h2>Popular Help Articles</h2>
+                    <span class="wf-muted">Getting started with the app</span>
+                </div>
+
+                <div class="wf-help-articles">
+
+                    <a data-help-article
+                       href="@Url.Action("Index","Dashboard")">
+                        <span class="wf-article-icon">1</span>
+                        <div>
+                            <strong>Getting Started with Atlas TaskFlow</strong>
+                            <small>Learn how to navigate Dashboard and your workspace.</small>
+                        </div>
+                        <span>›</span>
+                    </a>
+
+                    <a data-help-article
+                       href="@Url.Action("Index","Tasks")">
+                        <span class="wf-article-icon">2</span>
+                        <div>
+                            <strong>Creating and Managing Tasks</strong>
+                            <small>Explore task lists, deadlines, and priorities.</small>
+                        </div>
+                        <span>›</span>
+                    </a>
+
+                    <a data-help-article
+                       href="@Url.Action("TeamTasks","Workspace")">
+                        <span class="wf-article-icon">3</span>
+                        <div>
+                            <strong>Working with Your Team</strong>
+                            <small>See the design for team collaboration.</small>
+                        </div>
+                        <span>›</span>
+                    </a>
+
+                    <a data-help-article
+                       href="@Url.Action("Calendar","Workspace")">
+                        <span class="wf-article-icon">4</span>
+                        <div>
+                            <strong>Using the Calendar</strong>
+                            <small>Browse calendar views and upcoming deadlines.</small>
+                        </div>
+                        <span>›</span>
+                    </a>
+
+                    <a data-help-article
+                       href="@Url.Action("Index","Projects")">
+                        <span class="wf-article-icon">5</span>
+                        <div>
+                            <strong>Managing Projects</strong>
+                            <small>Create and manage projects in the workspace.</small>
+                        </div>
+                        <span>›</span>
+                    </a>
+
+                    <a data-help-article
+                       href="@Url.Action("Notifications","Workspace")">
+                        <span class="wf-article-icon">6</span>
+                        <div>
+                            <strong>Understanding Notifications</strong>
+                            <small>Browse task reminders and activity updates.</small>
+                        </div>
+                        <span>›</span>
+                    </a>
+
+                </div>
+
+                <p class="wf-empty" id="helpEmpty" hidden>
+                    No help topics match your search.
+                </p>
+
+            </section>
+
+            <!-- VIDEO TUTORIALS -->
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Video Tutorials</h2>
+                    <span class="wf-muted">Video previews</span>
+                </div>
+
+                <div class="wf-video-grid">
+
+                    <div class="wf-video">
+                        <div class="wf-video-thumb wf-thumb-blue">▶</div>
+                        <strong>Getting Started Overview</strong>
+                        <small>Video coming soon</small>
+                    </div>
+
+                    <div class="wf-video">
+                        <div class="wf-video-thumb wf-thumb-green">▶</div>
+                        <strong>Creating Tasks &amp; Projects</strong>
+                        <small>Video coming soon</small>
+                    </div>
+
+                    <div class="wf-video">
+                        <div class="wf-video-thumb wf-thumb-purple">▶</div>
+                        <strong>Team Collaboration</strong>
+                        <small>Video coming soon</small>
+                    </div>
+
+                    <div class="wf-video">
+                        <div class="wf-video-thumb wf-thumb-orange">▶</div>
+                        <strong>Calendar &amp; Scheduling</strong>
+                        <small>Video coming soon</small>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- RIGHT -->
+        <aside class="wf-side">
+
+            <section class="wf-panel">
+
+                <div class="wf-panel-heading">
+                    <h2>Contact Support</h2>
+                </div>
+
+                <div class="wf-quick-links">
+                    <button type="button" disabled>
+                        Send a Message — Coming Soon
+                    </button>
+
+                    <button type="button" disabled>
+                        Email Support — Coming Soon
+                    </button>
+
+                    <button type="button" disabled>
+                        Live Chat — Coming Soon
+                    </button>
+                </div>
+
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Frequently Asked Questions</h2>
+                </div>
+
+                <div class="wf-faq">
+
+                    <details>
+                        <summary>How do I create a new task?</summary>
+                        <p>Open My Tasks and select New Task.</p>
+                    </details>
+
+                    <details>
+                        <summary>How do I manage projects?</summary>
+                        <p>Open Projects to create, edit, and review projects.</p>
+                    </details>
+
+                    <details>
+                        <summary>Can I collaborate with team members?</summary>
+                        <p>Team collaboration is currently a preview and will be connected later.</p>
+                    </details>
+
+                    <details>
+                        <summary>How do I set task priorities?</summary>
+                        <p>Choose Low, Medium, High, or Urgent when creating a task.</p>
+                    </details>
+
+                    <details>
+                        <summary>Can I change notification settings?</summary>
+                        <p>You can preview the settings now. Saving preferences comes later.</p>
+                    </details>
+
+                </div>
+
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Additional Resources</h2>
+                </div>
+
+                <div class="wf-quick-links">
+                    <a href="@Url.Action("Index","Dashboard")">Dashboard Overview</a>
+                    <a href="@Url.Action("Index","Tasks")">Task Management</a>
+                    <a href="@Url.Action("Index","Projects")">Project Management</a>
+                    <a href="@Url.Action("Settings","Workspace")">Application Settings</a>
+                </div>
+
+            </section>
+
+        </aside>
+
+    </div>
+</div>
+
+<script src="@Url.Content("~/js/workspace.js")"></script>

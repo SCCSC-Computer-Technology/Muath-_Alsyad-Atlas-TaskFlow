@@ -1,0 +1,453 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Sign In";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Atlas TaskFlow | Sign In</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- Our CSS File -->
+    <link rel="stylesheet"
+          href="@Url.Content("~/css/login.css")">
+</head>
+
+<body>
+
+    <!-- SVG icons: reusable drawings -->
+    <svg class="svg-library"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true">
+
+        <defs>
+            <linearGradient id="atlasGradient"
+                            x1="0%" y1="100%"
+                            x2="100%" y2="0%">
+                <stop offset="0%"
+                      stop-color="#00D5FF" />
+                <stop offset="48%"
+                      stop-color="#4065FF" />
+                <stop offset="100%"
+                      stop-color="#B52AFF" />
+            </linearGradient>
+
+            <symbol id="atlas-logo"
+                    viewBox="0 0 48 48">
+
+                <rect width="48"
+                      height="48"
+                      rx="11"
+                      fill="url(#atlasGradient)" />
+
+                <path d="M8 34 L17 14 L24 24 L30 13 L40 34"
+                      fill="none"
+                      stroke="white"
+                      stroke-width="3"
+                      stroke-linejoin="round"
+                      stroke-linecap="round" />
+
+                <path d="M14 34 L20 26 L25 31 L30 24 L36 34"
+                      fill="none"
+                      stroke="white"
+                      stroke-width="2.5"
+                      stroke-linejoin="round"
+                      stroke-linecap="round"
+                      opacity=".8" />
+            </symbol>
+
+            <symbol id="icon-check"
+                    viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="m8 12 3 3 5-6" />
+            </symbol>
+
+            <symbol id="icon-calendar"
+                    viewBox="0 0 24 24">
+                <rect x="3" y="5"
+                      width="18" height="16"
+                      rx="2" />
+                <path d="M7 3v4 M17 3v4 M3 10h18" />
+                <circle cx="12" cy="15" r="2" />
+            </symbol>
+
+            <symbol id="icon-users"
+                    viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3" />
+                <path d="M3 20v-2a6 6 0 0 1 12 0v2" />
+                <path d="M17 5a3 3 0 0 1 0 6" />
+                <path d="M18 14a5 5 0 0 1 3 5v1" />
+            </symbol>
+
+            <symbol id="icon-trend"
+                    viewBox="0 0 24 24">
+                <path d="m3 17 7-7 4 4 7-7" />
+                <path d="M15 7h6v6" />
+            </symbol>
+
+            <symbol id="icon-mail"
+                    viewBox="0 0 24 24">
+                <rect x="3" y="5"
+                      width="18" height="14"
+                      rx="2" />
+                <path d="m3 7 9 7 9-7" />
+            </symbol>
+
+            <symbol id="icon-lock"
+                    viewBox="0 0 24 24">
+                <rect x="5" y="10"
+                      width="14" height="11"
+                      rx="2" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                <path d="M12 14v3" />
+            </symbol>
+
+            <symbol id="icon-arrow"
+                    viewBox="0 0 24 24">
+                <path d="M4 12h16" />
+                <path d="m14 6 6 6-6 6" />
+            </symbol>
+
+            <symbol id="icon-help"
+                    viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4" />
+                <path d="M12 17h.01" />
+            </symbol>
+
+            <symbol id="icon-shield"
+                    viewBox="0 0 24 24">
+                <path d="m12 2 8 4v6c0 5-3 8-8 10-5-2-8-5-8-10V6z" />
+                <path d="m9 12 2 2 4-4" />
+            </symbol>
+        </defs>
+    </svg>
+
+    <!-- MAIN PAGE -->
+    <main class="auth-page">
+
+        <!-- LEFT: WELCOME SECTION -->
+        <section class="welcome-panel"
+                 aria-labelledby="welcomeHeading">
+
+            <div class="welcome-inner">
+
+                <!-- Logo -->
+                <div class="brand brand-left">
+
+                    <svg class="brand-logo"
+                         aria-hidden="true">
+                        <use href="#atlas-logo"></use>
+                    </svg>
+
+                    <span class="brand-name">
+                        <strong>ATLAS</strong>
+                        <span>TASKFLOW</span>
+                    </span>
+                </div>
+
+                <p class="brand-tagline">
+                    BUILD. DEPLOY. REMEMBER.
+                    PROTECT. PREPARE. RELEASE.
+                </p>
+
+                <!-- Main Heading -->
+                <h1 id="welcomeHeading"
+                    class="hero-title">
+
+                    Stay organized.
+
+                    <span class="purple-text">
+                        Work together.
+                    </span>
+
+                    Meet every deadline.
+
+                </h1>
+
+                <p class="hero-description">
+                    Atlas TaskFlow helps students and teams
+                    manage assignments, projects, priorities,
+                    deadlines, and collaboration in one simple
+                    workspace.
+                </p>
+
+                <!-- Feature Cards -->
+                <div class="features-grid">
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            <svg aria-hidden="true">
+                                <use href="#icon-check"></use>
+                            </svg>
+                        </div>
+
+                        <div class="feature-text">
+                            <h3>Track Tasks</h3>
+                            <p>Stay organized and on top.</p>
+                        </div>
+
+                    </article>
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            <svg aria-hidden="true">
+                                <use href="#icon-calendar"></use>
+                            </svg>
+                        </div>
+
+                        <div class="feature-text">
+                            <h3>Meet Deadlines</h3>
+                            <p>Never miss what matters.</p>
+                        </div>
+
+                    </article>
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            <svg aria-hidden="true">
+                                <use href="#icon-users"></use>
+                            </svg>
+                        </div>
+
+                        <div class="feature-text">
+                            <h3>Collaborate</h3>
+                            <p>Work together, anytime.</p>
+                        </div>
+
+                    </article>
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            <svg aria-hidden="true">
+                                <use href="#icon-trend"></use>
+                            </svg>
+                        </div>
+
+                        <div class="feature-text">
+                            <h3>Achieve More</h3>
+                            <p>Turn plans into progress.</p>
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- RIGHT: LOGIN SECTION -->
+        <section class="login-panel"
+                 aria-labelledby="loginHeading">
+
+            <!-- Help icon with tooltip -->
+            <div class="help-container">
+
+                <button class="help-button"
+                        type="button"
+                        aria-label="Help information"
+                        aria-describedby="helpTooltip">
+
+                    <svg aria-hidden="true">
+                        <use href="#icon-help"></use>
+                    </svg>
+
+                </button>
+
+                <div id="helpTooltip"
+                     class="help-tooltip"
+                     role="tooltip">
+                    Help Center coming soon
+                </div>
+
+            </div>
+
+            <!-- White login card -->
+            <div class="login-card">
+
+                <div class="brand brand-card">
+
+                    <svg class="brand-logo"
+                         aria-hidden="true">
+                        <use href="#atlas-logo"></use>
+                    </svg>
+
+                    <span class="brand-name">
+                        <strong>ATLAS</strong>
+                        <span>TASKFLOW</span>
+                    </span>
+
+                </div>
+
+                <p class="welcome-label">
+                    WELCOME BACK
+                </p>
+
+                <h2 id="loginHeading">
+                    Sign in to your account
+                </h2>
+
+                <p class="login-description">
+                    Continue to your Atlas TaskFlow workspace
+                </p>
+
+                <!-- FORM: UI preview only -->
+                <form class="login-form">
+
+                    <!-- Email -->
+                    <div class="form-group">
+
+                        <label for="loginEmail">
+                            Email
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <svg class="input-icon"
+                                 aria-hidden="true">
+                                <use href="#icon-mail"></use>
+                            </svg>
+
+                            <input id="loginEmail"
+                                   type="email"
+                                   name="Email"
+                                   placeholder="alex.student@university.edu"
+                                   autocomplete="username"
+                                   required>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+
+                        <label for="loginPassword">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <svg class="input-icon"
+                                 aria-hidden="true">
+                                <use href="#icon-lock"></use>
+                            </svg>
+
+                            <input id="loginPassword"
+                                   type="password"
+                                   name="Password"
+                                   placeholder="Enter your password"
+                                   autocomplete="current-password"
+                                   required>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Remember / Forgot -->
+                    <div class="form-options">
+
+                        <label class="remember-option">
+
+                            <input type="checkbox"
+                                   name="RememberMe">
+
+                            <span>Remember me</span>
+
+                        </label>
+
+                        <button class="text-button"
+                                type="button">
+                            Forgot Password?
+                        </button>
+
+                    </div>
+
+                    <!-- Main Sign In Button -->
+                    <button class="sign-in-button"
+                            type="button"
+                            aria-describedby="authNotice">
+
+                        <span>Sign In</span>
+
+                        <svg aria-hidden="true">
+                            <use href="#icon-arrow"></use>
+                        </svg>
+
+                    </button>
+
+                </form>
+
+                <!-- OR Divider -->
+                <div class="or-divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Google Button -->
+                <button class="google-button"
+                        type="button"
+                        aria-describedby="authNotice">
+
+                    <span class="google-icon">G</span>
+
+                    <span>Continue with Google</span>
+
+                </button>
+
+                <!-- Signup -->
+                <p class="signup-text">
+
+                    Don't have an account?
+
+                    <button class="text-button"
+                            type="button">
+                        Sign Up
+                    </button>
+
+                </p>
+
+                <!-- Security / Demo notice -->
+                <p class="security-note"
+                   id="authNotice">
+
+                    <svg aria-hidden="true">
+                        <use href="#icon-shield"></use>
+                    </svg>
+
+                    <span>
+                        UI preview — authentication
+                        will be connected later.
+                    </span>
+
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

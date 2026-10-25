@@ -1,0 +1,166 @@
+﻿
+@* App #1 - Atlas TaskFlow - Complete Sidebar Navigation *@
+
+@{
+    string controller =
+        ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    string action =
+        ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool isDashboard = controller == "Dashboard";
+
+    bool isTasks = controller == "Tasks";
+
+    bool isProjects = controller == "Projects";
+
+    bool isTeam = controller == "Workspace"
+                  && action == "TeamTasks";
+
+    bool isCalendar = controller == "Workspace"
+                      && action == "Calendar";
+
+    bool isNotifications = controller == "Workspace"
+                           && action == "Notifications";
+
+    bool isSettings = controller == "Workspace"
+                      && action == "Settings";
+
+    bool isHelp = controller == "Workspace"
+                  && action == "Help";
+}
+
+<aside class="app-sidebar">
+
+    <!-- BRAND -->
+    <div class="sidebar-brand">
+
+        <a class="brand-link"
+           href="@Url.Action("Index","Dashboard")">
+
+            <svg class="brand-icon" aria-hidden="true">
+                <use href="#i-logo"></use>
+            </svg>
+
+            <span class="brand-name">
+                <strong>ATLAS</strong> TASKFLOW
+            </span>
+        </a>
+
+        <p class="brand-description">
+            Build. Deploy. Remember. Protect.<br />
+            Prepare. Release.
+        </p>
+    </div>
+
+    <!-- MAIN NAVIGATION -->
+    <nav class="sidebar-nav" aria-label="Main navigation">
+
+        <!-- DASHBOARD -->
+        <a class="nav-item @(isDashboard ? "active" : "")"
+           href="@Url.Action("Index","Dashboard")"
+           aria-current="@(isDashboard ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-dashboard"></use>
+            </svg>
+
+            <span>Dashboard</span>
+        </a>
+
+        <!-- MY TASKS -->
+        <a class="nav-item @(isTasks ? "active" : "")"
+           href="@Url.Action("Index","Tasks")"
+           aria-current="@(isTasks ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-task"></use>
+            </svg>
+
+            <span>My Tasks</span>
+        </a>
+
+        <!-- TEAM TASKS -->
+        <a class="nav-item @(isTeam ? "active" : "")"
+           href="@Url.Action("TeamTasks","Workspace")"
+           aria-current="@(isTeam ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-team"></use>
+            </svg>
+
+            <span>Team Tasks</span>
+        </a>
+
+        <!-- CALENDAR -->
+        <a class="nav-item @(isCalendar ? "active" : "")"
+           href="@Url.Action("Calendar","Workspace")"
+           aria-current="@(isCalendar ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-calendar"></use>
+            </svg>
+
+            <span>Calendar</span>
+        </a>
+
+        <!-- PROJECTS -->
+        <a class="nav-item @(isProjects ? "active" : "")"
+           href="@Url.Action("Index","Projects")"
+           aria-current="@(isProjects ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-folder"></use>
+            </svg>
+
+            <span>Projects</span>
+        </a>
+
+        <!-- NOTIFICATIONS -->
+        <a class="nav-item @(isNotifications ? "active" : "")"
+           href="@Url.Action("Notifications","Workspace")"
+           aria-current="@(isNotifications ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-bell"></use>
+            </svg>
+
+            <span>Notifications</span>
+        </a>
+
+    </nav>
+
+    <!-- SECONDARY NAVIGATION -->
+    <div class="sidebar-secondary">
+
+        <!-- SETTINGS -->
+        <a class="nav-item @(isSettings ? "active" : "")"
+           href="@Url.Action("Settings","Workspace")"
+           aria-current="@(isSettings ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-settings"></use>
+            </svg>
+
+            <span>Settings</span>
+        </a>
+
+        <!-- HELP -->
+        <a class="nav-item @(isHelp ? "active" : "")"
+           href="@Url.Action("Help","Workspace")"
+           aria-current="@(isHelp ? "page" : null)">
+
+            <svg class="icon" aria-hidden="true">
+                <use href="#i-help"></use>
+            </svg>
+
+            <span>Help</span>
+        </a>
+
+    </div>
+
+    <p class="sidebar-version">
+        Version 1.4.0 · Wireframe Preview
+    </p>
+
+</aside>

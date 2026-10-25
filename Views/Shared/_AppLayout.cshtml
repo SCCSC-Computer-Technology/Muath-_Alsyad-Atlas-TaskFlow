@@ -1,0 +1,67 @@
+﻿@{
+    var pageTitle = ViewData["Title"]?.ToString()
+                    ?? "Dashboard";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>@pageTitle | Atlas TaskFlow</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- Common application styles -->
+    <link rel="stylesheet"
+          href="@Url.Content("~/css/app.css")">
+
+    <!-- Page-specific styles -->
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body>
+
+    @await Html.PartialAsync("_IconSprite")
+
+    <div class="app-shell">
+
+        <!-- Reusable sidebar -->
+        @await Html.PartialAsync("_Sidebar")
+
+        <div class="app-main">
+
+            <!-- Reusable topbar -->
+            @await Html.PartialAsync("_Topbar")
+
+            <!-- Content changes on each page -->
+            <main id="main-content"
+                  class="app-content">
+
+                @RenderBody()
+
+            </main>
+
+        </div>
+
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    
+    @await Html.PartialAsync("_CreateTaskModal")
+
+
+</body>
+</html>

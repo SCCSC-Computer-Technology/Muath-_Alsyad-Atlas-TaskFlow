@@ -1,0 +1,183 @@
+﻿
+@* App #1 - Atlas TaskFlow - Edit Task Page *@
+
+@model Atlas_TaskFlow_App.Models.TaskItem
+@using Atlas_TaskFlow_App.Models
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Edit Task";
+
+    var projects = ViewBag.ProjectList as List<Project>
+                   ?? new List<Project>();
+
+    string? error = ViewBag.Error as string;
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="@Url.Content("~/css/my-tasks.css")" />
+}
+
+<div class="mytasks-page">
+
+    <div class="mytasks-header">
+        <div>
+            <h1>Edit Task</h1>
+            <p>Update task information and save your changes.</p>
+        </div>
+
+        <a class="mytasks-export-btn"
+           href="@Url.Action("Index", "Tasks")">
+            Back to My Tasks
+        </a>
+    </div>
+
+    <section class="mytasks-edit-card">
+
+        <h2>Task Details</h2>
+
+        @if (error != null)
+        {
+            <div class="mytasks-error-message" role="alert">
+                @error
+            </div>
+        }
+
+        <div asp-validation-summary="All"></div>
+
+        <form method="post"
+              action="@Url.Action("Edit", "Tasks", new { id = Model.TaskId })">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="TaskId"
+                   value="@Model.TaskId" />
+
+            <div class="mytasks-edit-grid">
+
+                <div class="mytasks-edit-field">
+                    <label for="editTitle">Task Title *</label>
+
+                    <input type="text"
+                           id="editTitle"
+                           name="Title"
+                           value="@Model.Title"
+                           maxlength="200"
+                           required />
+                </div>
+
+                <div class="mytasks-edit-field">
+                    <label for="editProject">Project *</label>
+
+                    <select id="editProject"
+                            name="ProjectId"
+                            required>
+
+                        @foreach (var project in projects)
+                        {
+                            <option value="@project.ProjectId"
+                                    selected="@(Model.ProjectId == project.ProjectId)">
+                                @project.Name
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+                <div class="mytasks-edit-field mytasks-edit-wide">
+                    <label for="editDescription">Description</label>
+
+                    <textarea id="editDescription"
+                              name="Description"
+                              rows="4"
+                              maxlength="1000">@Model.Description</textarea>
+                </div>
+
+                <div class="mytasks-edit-field">
+                    <label for="editDueDate">Due Date *</label>
+
+                    <input type="date"
+                           id="editDueDate"
+                           name="DueDate"
+                           value="@(Model.DueDate?.ToString("yyyy-MM-dd"))"
+                           required />
+                </div>
+
+                <div class="mytasks-edit-field">
+                    <label for="editPriority">Priority *</label>
+
+                    <select id="editPriority"
+                            name="Priority"
+                            required>
+
+                        <option value="Low"
+                                selected="@(Model.Priority == "Low")">
+                            Low
+                        </option>
+
+                        <option value="Medium"
+                                selected="@(Model.Priority == "Medium")">
+                            Medium
+                        </option>
+
+                        <option value="High"
+                                selected="@(Model.Priority == "High")">
+                            High
+                        </option>
+
+                        <option value="Urgent"
+                                selected="@(Model.Priority == "Urgent")">
+                            Urgent
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="mytasks-edit-field">
+                    <label for="editStatus">Status *</label>
+
+                    <select id="editStatus"
+                            name="Status"
+                            required>
+
+                        <option value="To Do"
+                                selected="@(Model.Status == "To Do")">
+                            To Do
+                        </option>
+
+                        <option value="In Progress"
+                                selected="@(Model.Status == "In Progress")">
+                            In Progress
+                        </option>
+
+                        <option value="Completed"
+                                selected="@(Model.Status == "Completed")">
+                            Completed
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="mytasks-edit-actions">
+
+                <a href="@Url.Action("Index", "Tasks")"
+                   class="mytasks-clear-btn">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="mytasks-primary-btn">
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>

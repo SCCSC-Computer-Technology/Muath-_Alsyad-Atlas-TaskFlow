@@ -1,0 +1,441 @@
+﻿
+@* App #1 - Atlas TaskFlow - Settings Wireframe *@
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Settings";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+}
+
+<div class="wf-page">
+
+    <div class="wf-heading">
+        <div>
+            <h1>Settings</h1>
+            <p>Manage your account, preferences, and application settings.</p>
+        </div>
+    </div>
+
+    <div class="wf-demo-label">
+        Settings Preview — changes are not saved to an account or database.
+    </div>
+
+    <!-- SETTINGS TABS -->
+    <div class="wf-settings-tabs">
+
+        <button type="button" class="active"
+                data-settings-tab="profile">
+            Profile
+        </button>
+
+        <button type="button" data-settings-tab="account">
+            Account
+        </button>
+
+        <button type="button" data-settings-tab="notifications">
+            Notifications
+        </button>
+
+        <button type="button" data-settings-tab="appearance">
+            Appearance
+        </button>
+
+        <button type="button" data-settings-tab="privacy">
+            Privacy &amp; Security
+        </button>
+
+        <button type="button" data-settings-tab="integrations">
+            Integrations
+        </button>
+
+    </div>
+
+    <div class="wf-layout">
+
+        <div class="wf-main">
+
+            <!-- PROFILE -->
+            <section class="wf-panel wf-settings-panel"
+                     data-settings-panel="profile">
+
+                <div class="wf-panel-heading">
+                    <h2>Profile Information</h2>
+
+                    <button type="button"
+                            class="wf-btn wf-btn-primary wf-btn-small"
+                            data-demo-save>
+                        Save Changes
+                    </button>
+                </div>
+
+                <div class="wf-form-body">
+
+                    <div class="wf-profile">
+                        <span class="wf-avatar wf-avatar-large">AS</span>
+
+                        <div>
+                            <strong>Change Profile Photo</strong>
+                            <p>JPG, PNG or GIF (Preview only)</p>
+                            <button type="button" class="wf-btn wf-btn-outline"
+                                    disabled>
+                                Upload Photo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="wf-form-grid">
+
+                        <div class="wf-field">
+                            <label for="settingsName">Full Name</label>
+                            <input id="settingsName" value="Alex Student" />
+                        </div>
+
+                        <div class="wf-field">
+                            <label for="settingsEmail">Email Address</label>
+                            <input id="settingsEmail" type="email"
+                                   value="alex.student@example.com" />
+                        </div>
+
+                        <div class="wf-field">
+                            <label for="settingsStudentId">Student ID (Optional)</label>
+                            <input id="settingsStudentId"
+                                   placeholder="Enter student ID..." />
+                        </div>
+
+                        <div class="wf-field">
+                            <label for="settingsUniversity">University / Institution</label>
+                            <input id="settingsUniversity"
+                                   value="State University" />
+                        </div>
+
+                        <div class="wf-field wf-field-wide">
+                            <label for="settingsBio">Bio</label>
+                            <textarea id="settingsBio" rows="3">Computer Science student passionate about web development and building useful tools.</textarea>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="wf-panel-heading wf-subsection">
+                    <h2>Academic Information</h2>
+
+                    <button type="button"
+                            class="wf-btn wf-btn-outline wf-btn-small"
+                            data-demo-save>
+                        Save Changes
+                    </button>
+                </div>
+
+                <div class="wf-form-body">
+                    <div class="wf-form-grid">
+
+                        <div class="wf-field">
+                            <label>Major</label>
+                            <select><option>Computer Science</option><option>Software Engineering</option><option>Other</option></select>
+                        </div>
+
+                        <div class="wf-field">
+                            <label>Year</label>
+                            <select><option>1st Year</option><option>2nd Year</option><option selected>3rd Year</option><option>4th Year</option></select>
+                        </div>
+
+                        <div class="wf-field">
+                            <label>Expected Graduation</label>
+                            <input type="month" value="2027-05" />
+                        </div>
+
+                        <div class="wf-field">
+                            <label>Time Zone</label>
+                            <select>
+                                <option>Eastern Time (ET)</option>
+                                <option>Central Time (CT)</option>
+                                <option>Pacific Time (PT)</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ACCOUNT -->
+            <section class="wf-panel wf-settings-panel"
+                     data-settings-panel="account" hidden>
+
+                <div class="wf-panel-heading">
+                    <h2>Account Settings</h2>
+                </div>
+
+                <div class="wf-form-body">
+                    <div class="wf-form-grid">
+
+                        <div class="wf-field">
+                            <label>Display Name</label>
+                            <input value="Alex Student" />
+                        </div>
+
+                        <div class="wf-field">
+                            <label>Language</label>
+                            <select><option>English</option><option>Arabic</option></select>
+                        </div>
+
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Change Password</strong>
+                            <p>Account security will be connected later.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-outline" type="button" disabled>
+                            Change
+                        </button>
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Delete Account</strong>
+                            <p>Unavailable in the UI prototype.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-danger" type="button" disabled>
+                            Delete Account
+                        </button>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- NOTIFICATION SETTINGS -->
+            <section class="wf-panel wf-settings-panel"
+                     data-settings-panel="notifications" hidden>
+
+                <div class="wf-panel-heading">
+                    <h2>Notification Preferences</h2>
+                    <a href="@Url.Action("Notifications","Workspace")">
+                        View Notifications →
+                    </a>
+                </div>
+
+                <div class="wf-form-body">
+
+                    <div class="wf-setting-row">
+                        <div><strong>Email Alerts</strong><p>Receive task and project alerts by email.</p></div>
+                        <input type="checkbox" checked />
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div><strong>Task Reminders</strong><p>Get reminded before deadlines.</p></div>
+                        <input type="checkbox" checked />
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div><strong>Team Updates</strong><p>Receive information about team activity.</p></div>
+                        <input type="checkbox" checked />
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div><strong>Weekly Summary</strong><p>Receive a weekly progress report.</p></div>
+                        <input type="checkbox" />
+                    </div>
+
+                    <button type="button"
+                            class="wf-btn wf-btn-primary"
+                            data-demo-save>
+                        Save Preferences
+                    </button>
+
+                </div>
+
+            </section>
+
+            <!-- APPEARANCE -->
+            <section class="wf-panel wf-settings-panel"
+                     data-settings-panel="appearance" hidden>
+
+                <div class="wf-panel-heading">
+                    <h2>Appearance</h2>
+                </div>
+
+                <div class="wf-form-body">
+                    <div class="wf-field">
+                        <label>Theme</label>
+
+                        <select id="themePreview">
+                            <option>Light (Current)</option>
+                            <option>Dark (Coming Soon)</option>
+                            <option>System Default (Coming Soon)</option>
+                        </select>
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Compact Layout</strong>
+                            <p>Preview a preference for denser spacing.</p>
+                        </div>
+                        <input type="checkbox" />
+                    </div>
+
+                    <button type="button" class="wf-btn wf-btn-primary"
+                            data-demo-save>
+                        Save Appearance
+                    </button>
+
+                </div>
+
+            </section>
+
+            <!-- PRIVACY AND SECURITY -->
+            <section class="wf-panel wf-settings-panel"
+                     data-settings-panel="privacy" hidden>
+
+                <div class="wf-panel-heading">
+                    <h2>Privacy &amp; Security</h2>
+                </div>
+
+                <div class="wf-form-body">
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Two-Factor Authentication</strong>
+                            <p>Additional account protection.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-outline"
+                                type="button" disabled>
+                            Set Up
+                        </button>
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Active Sessions</strong>
+                            <p>Review signed-in devices in the future.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-outline"
+                                type="button" disabled>
+                            View Sessions
+                        </button>
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Export My Data</strong>
+                            <p>Account export will be implemented later.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-outline"
+                                type="button" disabled>
+                            Export
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- INTEGRATIONS -->
+            <section class="wf-panel wf-settings-panel"
+                     data-settings-panel="integrations" hidden>
+
+                <div class="wf-panel-heading">
+                    <h2>Integrations</h2>
+                </div>
+
+                <div class="wf-form-body">
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Google Calendar</strong>
+                            <p>Synchronize tasks with your calendar.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-outline"
+                                type="button" disabled>
+                            Connect
+                        </button>
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Email Integration</strong>
+                            <p>Receive updates from external email services.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-outline"
+                                type="button" disabled>
+                            Connect
+                        </button>
+                    </div>
+
+                    <div class="wf-setting-row">
+                        <div>
+                            <strong>Other Tools</strong>
+                            <p>Additional integrations will appear here.</p>
+                        </div>
+                        <button class="wf-btn wf-btn-outline"
+                                type="button" disabled>
+                            Coming Soon
+                        </button>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="wf-side">
+
+            <section class="wf-panel">
+                <div class="wf-panel-heading">
+                    <h2>Quick Actions</h2>
+                </div>
+
+                <div class="wf-quick-links">
+                    <button type="button" data-settings-go="account">
+                        Account Settings
+                    </button>
+
+                    <button type="button" data-settings-go="notifications">
+                        Notification Settings
+                    </button>
+
+                    <button type="button" data-settings-go="appearance">
+                        Appearance
+                    </button>
+
+                    <a href="@Url.Action("Help","Workspace")">
+                        Help &amp; Support
+                    </a>
+                </div>
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+                <div class="wf-panel-heading">
+                    <h2>Account Usage</h2>
+                </div>
+
+                <div class="wf-progress-list">
+                    <label>Projects <small>2 / 10 (Preview)</small></label>
+                    <div class="wf-progress"><span style="width:20%"></span></div>
+
+                    <label>Tasks <small>42 / 100 (Preview)</small></label>
+                    <div class="wf-progress"><span style="width:42%"></span></div>
+
+                    <label>Team Members <small>4 / 10 (Preview)</small></label>
+                    <div class="wf-progress"><span style="width:40%"></span></div>
+                </div>
+            </section>
+
+        </aside>
+
+    </div>
+
+    <div id="settingsDemoMessage" class="wf-demo-message"
+         role="status" hidden>
+        Wireframe preview: your changes have not been saved.
+    </div>
+
+</div>
+
+<script src="@Url.Content("~/js/workspace.js")"></script>

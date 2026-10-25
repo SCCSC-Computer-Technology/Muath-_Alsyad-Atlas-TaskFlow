@@ -1,0 +1,752 @@
+﻿
+/* ==========================================
+   ATLAS TASKFLOW
+   Professional Login Page - Version 2
+   ========================================== */
+
+/* 1. GLOBAL SETTINGS */
+
+:root {
+    --color-bg: #080719;
+    --color-primary: #315ff4;
+    --color-purple: #bd2adf;
+    --color-text: #1d293d;
+    --color-muted: #71809b;
+    --color-border: #dce5f0;
+    --radius-card: 22px;
+    --radius-input: 9px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    color: var(--color-text);
+    background: var(--color-bg);
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.svg-library {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+/* 2. TWO-COLUMN PAGE LAYOUT */
+
+.auth-page {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+    overflow: hidden;
+}
+
+/* 3. LEFT WELCOME PANEL */
+
+.welcome-panel {
+    display: flex;
+    align-items: center;
+    padding: 70px clamp(32px, 5.8vw, 80px);
+    color: white;
+    background: radial-gradient( ellipse at 17% 89%, rgba(18, 62, 183, .44), transparent 56% ), radial-gradient( ellipse at 69% 49%, rgba(91, 16, 156, .31), transparent 58% ), linear-gradient( 135deg, #030617 0%, #08051c 62%, #070416 100% );
+}
+
+.welcome-inner {
+    width: 100%;
+    max-width: 610px;
+    animation: fadeSlideIn .8s ease both;
+}
+
+/* 4. LOGO & BRAND */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    width: 29px;
+    height: 29px;
+    flex-shrink: 0;
+    filter: drop-shadow( 0 3px 8px rgba(90, 80, 255, .20) );
+    transition: transform .3s ease, filter .3s ease;
+}
+
+.brand:hover .brand-logo {
+    transform: rotate(-6deg) scale(1.09);
+    filter: drop-shadow( 0 4px 12px rgba(115, 70, 255, .5) );
+}
+
+.brand-name {
+    font-size: 16px;
+    letter-spacing: -.45px;
+    white-space: nowrap;
+}
+
+    .brand-name strong {
+        font-weight: 800;
+    }
+
+    .brand-name > span {
+        font-weight: 400;
+        color: #96a1bc;
+    }
+
+.brand-left .brand-name strong {
+    color: #ffffff;
+}
+
+.brand-card .brand-name strong {
+    color: #25304b;
+}
+
+.brand-tagline {
+    margin: 11px 0 35px;
+    font-size: 10px;
+    line-height: 1.7;
+    font-weight: 700;
+    letter-spacing: .3px;
+    color: #a0acc9;
+}
+
+/* 5. HERO TITLE */
+
+.hero-title {
+    margin: 0;
+    font-size: clamp(35px, 3.5vw, 51px);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -1.7px;
+    max-width: 620px;
+}
+
+.purple-text {
+    display: block;
+    background: linear-gradient( 100deg, #a46cff, #e279f0 );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.hero-description {
+    max-width: 610px;
+    margin: 24px 0 31px;
+    color: #9daacc;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+/* 6. FEATURE GRID */
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+}
+
+.feature-card {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-height: 60px;
+    padding: 13px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 11px;
+    background: rgba(255,255,255,.052);
+    transition: transform .25s ease, background .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        background: rgba(94,86,209,.15);
+        border-color: rgba(176,117,255,.40);
+        box-shadow: 0 12px 25px rgba(0,0,0,.16);
+    }
+
+.feature-icon {
+    width: 37px;
+    height: 37px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(105,73,229,.24);
+    color: #c06bff;
+}
+
+    .feature-icon svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+.feature-text h3 {
+    margin: 0 0 4px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.feature-text p {
+    margin: 0;
+    color: #9eabc7;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* 7. RIGHT LOGIN PANEL */
+
+.login-panel {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 85px 26px 50px;
+    background: #080719;
+}
+
+/* 8. HELP BUTTON */
+
+.help-container {
+    position: absolute;
+    top: 38px;
+    right: 42px;
+    z-index: 5;
+}
+
+.help-button {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #96a2bb;
+    background: #15162a;
+    border: 1px solid #272a45;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform .2s ease, color .2s ease, background .2s ease;
+}
+
+    .help-button svg {
+        width: 21px;
+        height: 21px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .help-button:hover {
+        background: #29214c;
+        color: white;
+        transform: scale(1.09);
+    }
+
+    .help-button:active {
+        transform: scale(.93);
+    }
+
+.help-tooltip {
+    position: absolute;
+    top: 44px;
+    right: 0;
+    width: max-content;
+    max-width: 210px;
+    background: #26233f;
+    color: white;
+    padding: 10px 13px;
+    border-radius: 8px;
+    font-size: 11px;
+    box-shadow: 0 8px 18px rgba(0,0,0,.25);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-5px);
+    transition: all .2s ease;
+}
+
+.help-button:hover + .help-tooltip,
+.help-button:focus-visible + .help-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* 9. WHITE LOGIN CARD */
+
+.login-card {
+    width: 100%;
+    max-width: 475px;
+    padding: 43px;
+    background: #ffffff;
+    border-radius: var(--radius-card);
+    box-shadow: 0 28px 80px rgba(0,0,0,.25);
+    animation: cardAppear .75s ease both;
+}
+
+.brand-card {
+    margin-bottom: 29px;
+}
+
+    .brand-card .brand-name {
+        font-size: 15px;
+    }
+
+.welcome-label {
+    margin: 0 0 9px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .8px;
+    color: #75849f;
+}
+
+.login-card h2 {
+    margin: 0;
+    font-size: clamp(22px, 2.1vw, 29px);
+    font-weight: 800;
+    letter-spacing: -.8px;
+    color: #1d293d;
+}
+
+.login-description {
+    margin: 9px 0 24px;
+    color: #8090aa;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* 10. FORM & INPUTS */
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .form-group > label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #27334a;
+    }
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #788ba5;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: stroke .2s ease;
+}
+
+.input-wrapper input {
+    display: block;
+    width: 100%;
+    height: 44px;
+    padding: 0 14px 0 44px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    background: #f6f9fd;
+    color: #26354e;
+    font-size: 12px;
+    outline: none;
+    transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+
+    .input-wrapper input::placeholder {
+        color: #7d8ba1;
+        opacity: 1;
+    }
+
+    .input-wrapper input:hover {
+        border-color: #aab8d7;
+        background: #ffffff;
+    }
+
+    .input-wrapper input:focus {
+        border-color: #645dff;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(91,90,245,.12);
+    }
+
+.input-wrapper:focus-within .input-icon {
+    stroke: #635afa;
+}
+
+/* 11. REMEMBER ME & LINKS */
+
+.form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: -2px;
+}
+
+.remember-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #2f3a51;
+    font-size: 12px;
+}
+
+    .remember-option input {
+        width: 15px;
+        height: 15px;
+        margin: 0;
+        accent-color: #3165f5;
+        cursor: pointer;
+    }
+
+.text-button {
+    border: none;
+    background: transparent;
+    padding: 2px 0;
+    color: #2965ff;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color .2s ease, transform .2s ease;
+}
+
+    .text-button:hover {
+        color: #a02fd8;
+        text-decoration: underline;
+    }
+
+    .text-button:active {
+        transform: scale(.96);
+    }
+
+/* 12. PRIMARY BUTTON */
+
+.sign-in-button {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient( 100deg, #2864f4 0%, #6350eb 53%, #bc24d8 100% );
+    color: white;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(92,70,245,.17);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+    .sign-in-button svg {
+        position: relative;
+        z-index: 1;
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform .25s ease;
+    }
+
+    .sign-in-button > span {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Light moving across the button */
+    .sign-in-button::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient( 110deg, transparent 20%, rgba(255,255,255,.24) 50%, transparent 80% );
+        transform: translateX(-120%);
+        transition: transform .55s ease;
+    }
+
+    /* Mouse hover */
+    .sign-in-button:hover {
+        transform: translateY(-3px);
+        filter: brightness(1.08);
+        box-shadow: 0 11px 26px rgba(103,63,229,.36);
+    }
+
+        .sign-in-button:hover::before {
+            transform: translateX(120%);
+        }
+
+        .sign-in-button:hover svg {
+            transform: translateX(4px);
+        }
+
+    /* Mouse pressed */
+    .sign-in-button:active {
+        transform: translateY(2px) scale(.985);
+        box-shadow: 0 3px 8px rgba(103,63,229,.25);
+    }
+
+    /* Keyboard focus */
+    .sign-in-button:focus-visible,
+    .google-button:focus-visible,
+    .text-button:focus-visible,
+    .help-button:focus-visible {
+        outline: 3px solid #9b91ff;
+        outline-offset: 3px;
+    }
+
+/* 13. OR DIVIDER */
+
+.or-divider {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin: 24px 0;
+    color: #8190aa;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+    .or-divider::before,
+    .or-divider::after {
+        content: "";
+        height: 1px;
+        flex: 1;
+        background: #e1e7f0;
+    }
+
+/* 14. GOOGLE BUTTON */
+
+.google-button {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background: #ffffff;
+    border: 1px solid #dae3f1;
+    border-radius: 9px;
+    color: #394761;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.google-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #232936;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.google-button:hover {
+    background: #f5f7ff;
+    border-color: #a3b4fc;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 15px rgba(36,60,130,.09);
+}
+
+.google-button:active {
+    transform: translateY(1px) scale(.99);
+}
+
+/* 15. BOTTOM TEXT */
+
+.signup-text {
+    margin: 24px 0;
+    text-align: center;
+    color: #8997af;
+    font-size: 12px;
+}
+
+    .signup-text .text-button {
+        margin-left: 3px;
+        font-size: 12px;
+    }
+
+.security-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin: 0;
+    color: #8899b3;
+    font-size: 10px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+    .security-note svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+/* 16. ENTRANCE ANIMATIONS */
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes cardAppear {
+    from {
+        opacity: 0;
+        transform: translateY(25px) scale(.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 17. RESPONSIVE DESIGN */
+
+@media (max-width: 1080px) {
+    .auth-page {
+        grid-template-columns: minmax(0, 53%) minmax(0, 47%);
+    }
+
+    .welcome-panel {
+        padding: 45px 30px;
+    }
+
+    .login-card {
+        padding: 32px;
+    }
+
+    .hero-title {
+        font-size: 38px;
+    }
+}
+
+@media (max-width: 800px) {
+    .auth-page {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-panel {
+        padding: 55px 28px;
+    }
+
+    .welcome-inner {
+        max-width: 620px;
+        margin: 0 auto;
+    }
+
+    .login-panel {
+        padding: 75px 22px 55px;
+    }
+
+    .login-card {
+        max-width: 500px;
+    }
+
+    .help-container {
+        top: 20px;
+        right: 24px;
+    }
+}
+
+@media (max-width: 460px) {
+    .welcome-panel {
+        padding: 45px 20px;
+    }
+
+    .hero-title {
+        font-size: 34px;
+        letter-spacing: -1px;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .login-panel {
+        padding: 65px 14px 40px;
+    }
+
+    .login-card {
+        padding: 25px 20px;
+        border-radius: 17px;
+    }
+
+        .login-card h2 {
+            font-size: 22px;
+        }
+}
+
+/* 18. ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}

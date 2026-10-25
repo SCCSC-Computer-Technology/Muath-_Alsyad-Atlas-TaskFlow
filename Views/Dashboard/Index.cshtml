@@ -1,0 +1,458 @@
+﻿@model List<Atlas_TaskFlow_App.Models.TaskItem>
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Dashboard";
+
+    DateTime today = DateTime.Today;
+
+    int daysSinceMonday =
+        ((int)today.DayOfWeek + 6) % 7;
+
+    DateTime monday = today.AddDays(-daysSinceMonday);
+
+    DateTime nextMonday = monday.AddDays(7);
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="@Url.Content("~/css/dashboard.css")">
+}
+
+<div class="dashboard-page">
+
+    <!-- PAGE HEADER -->
+    <div class="dashboard-heading">
+
+        <div class="heading-text">
+            <h1>Welcome back, Alex!</h1>
+
+            <p>
+                Here's an overview of your tasks
+                and team progress.
+            </p>
+        </div>
+
+        <!-- Interactive UI preview -->
+        <!-- Open Create Task Modal -->
+        <div class="new-task-menu">
+
+            <button type="button"
+                    class="new-task-button"
+                    onclick="document.getElementById('createTaskDialog').showModal()">
+
+                <svg class="icon" aria-hidden="true">
+                    <use href="#i-plus"></use>
+                </svg>
+
+                <span>New Task</span>
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+    <!-- STATISTICS CARDS -->
+    <section class="stats-grid"
+             aria-label="Task statistics">
+
+        <article class="stat-card">
+
+            <div class="stat-icon stat-blue">
+                <svg class="icon" aria-hidden="true">
+                    <use href="#i-task"></use>
+                </svg>
+            </div>
+
+            <div class="stat-information">
+                <div class="stat-title">
+                    <strong>@Model.Count</strong>
+                    <span>Total Tasks</span>
+                </div>
+
+                <p>3 due this week</p>
+            </div>
+
+        </article>
+
+        <article class="stat-card">
+
+            <div class="stat-icon stat-red">
+                <svg class="icon" aria-hidden="true">
+                    <use href="#i-alert"></use>
+                </svg>
+            </div>
+
+            <div class="stat-information">
+                <div class="stat-title">
+                    <strong>
+                        @(Model.Count(t =>
+                            t.DueDate < DateTime.Today &&
+                            t.Status != "Completed"))
+                    </strong>
+
+                    <span>Overdue</span>
+                </div>
+
+                <p>Needs attention</p>
+            </div>
+
+        </article>
+
+        <article class="stat-card">
+
+            <div class="stat-icon stat-orange">
+                <svg class="icon" aria-hidden="true">
+                    <use href="#i-calendar"></use>
+                </svg>
+            </div>
+
+            <div class="stat-information">
+                <div class="stat-title">
+                    <strong>
+                        @(Model.Count(t =>
+                            t.DueDate >= monday &&
+                            t.DueDate < nextMonday &&
+                            t.Status != "Completed"))
+                    </strong>
+
+                    <span>Due This Week</span>
+                </div>
+
+                <p>Across all projects</p>
+            </div>
+
+        </article>
+
+        <article class="stat-card">
+
+            <div class="stat-icon stat-green">
+                <svg class="icon" aria-hidden="true">
+                    <use href="#i-folder"></use>
+                </svg>
+            </div>
+
+            <div class="stat-information">
+                <div class="stat-title">
+                    <strong>@ViewBag.ActiveProjects</strong>
+                    <span>Active Projects</span>
+                </div>
+
+                <p>Active</p>
+            </div>
+
+        </article>
+
+    </section>
+
+    <!-- DASHBOARD TWO-COLUMN CONTENT -->
+    <div class="dashboard-columns">
+
+        <!-- LEFT COLUMN -->
+        <div class="dashboard-left">
+
+            <!-- UPCOMING TASKS -->
+            <section class="dashboard-panel">
+
+                <div class="panel-heading">
+
+                    <h2>My Upcoming Tasks</h2>
+
+                    <span class="panel-link"
+                          title="Tasks page coming later">
+                        View All
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-arrow"></use>
+                        </svg>
+                    </span>
+
+                </div>
+
+                <div class="table-scroll">
+
+                    <table class="tasks-table">
+
+                        <thead>
+                            <tr>
+                                <th aria-label="Selection"></th>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var task in Model)
+                            {
+                                <tr>
+                                    <td></td>
+
+                                    <td class="task-name">
+                                        @task.Title
+                                    </td>
+
+                                    <td>
+                                        @task.Project?.Name
+                                    </td>
+
+                                    <td>
+                                        @task.DueDate?.ToString("MMM dd, yyyy")
+                                    </td>
+
+                                    <td>
+                                        @task.Priority
+                                    </td>
+
+                                    <td>
+                                        @task.Status
+                                    </td>
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+            <!-- RECENT ACTIVITY -->
+            <section class="dashboard-panel activity-panel">
+
+                <div class="panel-heading">
+
+                    <h2>Recent Activity</h2>
+
+                    <span class="panel-link"
+                          title="Activity page coming later">
+                        View All
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-arrow"></use>
+                        </svg>
+                    </span>
+
+                </div>
+
+                <div class="activity-list">
+
+                    <div class="activity-item">
+                        <span class="activity-icon activity-green">
+                            <svg class="icon" aria-hidden="true">
+                                <use href="#i-check-circle"></use>
+                            </svg>
+                        </span>
+
+                        <p>
+                            Taylor added a new task
+                            <strong>"Design homepage"</strong>
+                        </p>
+
+                        <time>2 hours ago</time>
+                    </div>
+
+                    <div class="activity-item">
+                        <span class="activity-icon activity-blue">
+                            <svg class="icon" aria-hidden="true">
+                                <use href="#i-message"></use>
+                            </svg>
+                        </span>
+
+                        <p>
+                            You commented on
+                            <strong>"Project proposal"</strong>
+                        </p>
+
+                        <time>4 hours ago</time>
+                    </div>
+
+                    <div class="activity-item">
+                        <span class="activity-icon activity-purple">
+                            <svg class="icon" aria-hidden="true">
+                                <use href="#i-user"></use>
+                            </svg>
+                        </span>
+
+                        <p>
+                            Jordan completed
+                            <strong>"User research interview"</strong>
+                        </p>
+
+                        <time>1 day ago</time>
+                    </div>
+
+                    <div class="activity-item">
+                        <span class="activity-icon activity-orange">
+                            <svg class="icon" aria-hidden="true">
+                                <use href="#i-file"></use>
+                            </svg>
+                        </span>
+
+                        <p>
+                            New file added to
+                            <strong>"UX Design"</strong>
+                        </p>
+
+                        <time>1 day ago</time>
+                    </div>
+
+                    <div class="activity-item">
+                        <span class="activity-icon activity-slate">
+                            <svg class="icon" aria-hidden="true">
+                                <use href="#i-refresh"></use>
+                            </svg>
+                        </span>
+
+                        <p>
+                            Project
+                            <strong>"Web Development"</strong>
+                            was updated
+                        </p>
+
+                        <time>2 days ago</time>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="dashboard-right">
+
+            <!-- CALENDAR -->
+            <section class="dashboard-panel calendar-panel">
+
+                <div class="panel-heading">
+
+                    <h2>Calendar Preview</h2>
+
+                    <span class="panel-link"
+                          title="Calendar page coming later">
+                        View Full Calendar
+                    </span>
+
+                </div>
+
+                <div class="calendar-month">
+                    <span aria-hidden="true">‹</span>
+                    <strong>October 2026</strong>
+                    <span aria-hidden="true">›</span>
+                </div>
+
+                <div class="calendar-grid"
+                     aria-label="October 2026 sample calendar">
+
+                    <!-- Weekday headings -->
+                    <span class="weekday">Sun</span>
+                    <span class="weekday">Mon</span>
+                    <span class="weekday">Tue</span>
+                    <span class="weekday">Wed</span>
+                    <span class="weekday">Thu</span>
+                    <span class="weekday">Fri</span>
+                    <span class="weekday">Sat</span>
+
+                    <!-- September days -->
+                    <span class="calendar-day muted">27</span>
+                    <span class="calendar-day muted">28</span>
+                    <span class="calendar-day muted">29</span>
+                    <span class="calendar-day muted">30</span>
+
+                    <!-- October -->
+                    <span class="calendar-day">1</span>
+                    <span class="calendar-day">2</span>
+                    <span class="calendar-day">3</span>
+
+                    <span class="calendar-day">4</span>
+                    <span class="calendar-day">5</span>
+                    <span class="calendar-day">6</span>
+                    <span class="calendar-day">7</span>
+                    <span class="calendar-day">8</span>
+                    <span class="calendar-day">9</span>
+                    <span class="calendar-day">10</span>
+
+                    <span class="calendar-day">11</span>
+                    <span class="calendar-day">12</span>
+                    <span class="calendar-day">13</span>
+                    <span class="calendar-day">14</span>
+                    <span class="calendar-day">15</span>
+                    <span class="calendar-day">16</span>
+                    <span class="calendar-day">17</span>
+
+                    <span class="calendar-day selected">18</span>
+                    <span class="calendar-day">19</span>
+                    <span class="calendar-day has-event">20</span>
+                    <span class="calendar-day">21</span>
+                    <span class="calendar-day has-event">22</span>
+                    <span class="calendar-day">23</span>
+                    <span class="calendar-day has-event">24</span>
+
+                    <span class="calendar-day">25</span>
+                    <span class="calendar-day">26</span>
+                    <span class="calendar-day">27</span>
+                    <span class="calendar-day">28</span>
+                    <span class="calendar-day">29</span>
+                    <span class="calendar-day">30</span>
+                    <span class="calendar-day">31</span>
+
+                </div>
+
+            </section>
+
+            <!-- TEAM PROGRESS -->
+            <section class="dashboard-panel progress-panel">
+
+                <div class="panel-heading">
+
+                    <h2>Team Progress</h2>
+
+                    <span class="panel-link"
+                          title="Projects page coming later">
+                        View All Projects
+                    </span>
+
+                </div>
+
+                <div class="progress-item">
+
+                    <div class="progress-label">
+                        <strong>Web Development</strong>
+                        <span>4 of 4 tasks completed</span>
+                    </div>
+
+                    <div class="progress-track">
+                        <div class="progress-fill full"></div>
+                    </div>
+
+                </div>
+
+                <div class="progress-item">
+
+                    <div class="progress-label">
+                        <strong>UX Design</strong>
+                        <span>2 of 6 tasks completed</span>
+                    </div>
+
+                    <div class="progress-track">
+                        <div class="progress-fill third"></div>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+    <p class="dashboard-demo-note">
+        UI Demo — sample information,
+        not yet connected to SQL Server.
+    </p>
+
+</div>

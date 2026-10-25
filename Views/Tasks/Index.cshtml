@@ -1,0 +1,402 @@
+﻿
+@* App #1 - Atlas TaskFlow - My Tasks Page *@
+
+@model List<Atlas_TaskFlow_App.Models.TaskItem>
+@using Atlas_TaskFlow_App.Models
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "My Tasks";
+
+    var projects = ViewBag.ProjectList as List<Project>
+                   ?? new List<Project>();
+
+    var upcoming = ViewBag.UpcomingTasks as List<TaskItem>
+                   ?? new List<TaskItem>();
+
+    string search = ViewBag.Search ?? "";
+    string priority = ViewBag.Priority ?? "";
+    string status = ViewBag.Status ?? "";
+    string period = ViewBag.Period ?? "";
+    string sort = ViewBag.Sort ?? "";
+
+    int projectId = ViewBag.ProjectId;
+    int total = ViewBag.TotalTasks;
+    int completed = ViewBag.CompletedTasks;
+    int overdue = ViewBag.OverdueTasks;
+    int dueThisWeek = ViewBag.DueThisWeek;
+
+    int completionRate = total == 0
+        ? 0
+        : (int)Math.Round(completed * 100.0 / total);
+
+    string? message = TempData["TaskMessage"] as string;
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="@Url.Content("~/css/my-tasks.css")" />
+}
+
+<div class="mytasks-page">
+
+    <!-- PAGE HEADER -->
+    <div class="mytasks-header">
+
+        <div>
+            <h1>My Tasks</h1>
+            <p>Track your assignments, priorities, and deadlines in one place.</p>
+        </div>
+
+        <div class="mytasks-header-actions">
+
+            <button type="button"
+                    class="mytasks-primary-btn"
+                    onclick="document.getElementById('createTaskDialog').showModal()">
+                + New Task
+            </button>
+
+            <a class="mytasks-export-btn"
+               href="@Url.Action("Export", "Tasks")">
+                Export CSV
+            </a>
+
+        </div>
+
+    </div>
+
+    @if (message != null)
+    {
+        <div class="mytasks-success-message" role="status">
+            @message
+        </div>
+    }
+
+    <!-- FILTERS -->
+    <section class="mytasks-filters">
+
+        <form method="get"
+              action="@Url.Action("Index", "Tasks")">
+
+            <div class="mytasks-filter-row">
+
+                <input type="search"
+                       name="search"
+                       value="@search"
+                       placeholder="Search tasks or projects..." />
+
+                <select name="projectId">
+                    <option value="">All Projects</option>
+
+                    @foreach (var project in projects)
+                    {
+                        <option value="@project.ProjectId"
+                                selected="@(projectId == project.ProjectId)">
+                            @project.Name
+                        </option>
+                    }
+                </select>
+
+                <select name="priority">
+                    <option value="">All Priorities</option>
+                    <option value="Low" selected="@(priority == "Low")">Low</option>
+                    <option value="Medium" selected="@(priority == "Medium")">Medium</option>
+                    <option value="High" selected="@(priority == "High")">High</option>
+                    <option value="Urgent" selected="@(priority == "Urgent")">Urgent</option>
+                </select>
+
+                <select name="status">
+                    <option value="">All Statuses</option>
+                    <option value="To Do" selected="@(status == "To Do")">To Do</option>
+                    <option value="In Progress" selected="@(status == "In Progress")">In Progress</option>
+                    <option value="Completed" selected="@(status == "Completed")">Completed</option>
+                </select>
+
+                <select name="sort">
+                    <option value="" selected="@(sort == "")">Due Date ↑</option>
+                    <option value="due-desc" selected="@(sort == "due-desc")">Due Date ↓</option>
+                    <option value="newest" selected="@(sort == "newest")">Newest First</option>
+                    <option value="title" selected="@(sort == "title")">Task Title</option>
+                </select>
+
+                <button type="submit" class="mytasks-filter-btn">
+                    Apply
+                </button>
+
+                <a class="mytasks-clear-btn"
+                   href="@Url.Action("Index", "Tasks")">
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+        <!-- QUICK FILTERS -->
+        <div class="mytasks-quick-filters">
+
+            <a class="mytasks-tab @(period == "" ? "active" : "")"
+               href="@Url.Action("Index", "Tasks")">
+                All
+            </a>
+
+            <a class="mytasks-tab @(period == "today" ? "active" : "")"
+               href="@Url.Action("Index", "Tasks", new { period = "today" })">
+                Today
+            </a>
+
+            <a class="mytasks-tab @(period == "week" ? "active" : "")"
+               href="@Url.Action("Index", "Tasks", new { period = "week" })">
+                This Week
+            </a>
+
+            <a class="mytasks-tab @(period == "overdue" ? "active" : "")"
+               href="@Url.Action("Index", "Tasks", new { period = "overdue" })">
+                Overdue
+            </a>
+
+            <a class="mytasks-tab @(period == "completed" ? "active" : "")"
+               href="@Url.Action("Index", "Tasks", new { period = "completed" })">
+                Completed
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- PAGE CONTENT -->
+    <div class="mytasks-content">
+
+        <!-- LEFT: TASK LIST -->
+        <div class="mytasks-main">
+
+            <section class="mytasks-panel">
+
+                <div class="mytasks-panel-header">
+                    <h2>Task List</h2>
+                    <span>@Model.Count task(s) found</span>
+                </div>
+
+                <div class="mytasks-table-scroll">
+
+                    <table class="mytasks-table">
+
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @if (Model.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="6" class="mytasks-empty">
+                                        No tasks found. Try changing your filters.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var task in Model)
+                                {
+                                    string statusClass =
+                                        task.Status == "Completed" ? "completed" :
+                                        task.Status == "In Progress" ? "progress" :
+                                        "todo";
+
+                                    string priorityClass =
+                                        task.Priority.ToLowerInvariant();
+
+                                    <tr>
+                                        <td class="mytasks-title-cell">
+                                            @task.Title
+                                        </td>
+
+                                        <td>
+                                            @(task.Project?.Name ?? "Unknown")
+                                        </td>
+
+                                        <td>
+                                            @task.DueDate?.ToString("MMM dd, yyyy")
+                                        </td>
+
+                                        <td>
+                                            <span class="mytasks-priority priority-@priorityClass">
+                                                @task.Priority
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="mytasks-status status-@statusClass">
+                                                @task.Status
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div class="mytasks-row-actions">
+
+                                                <a class="mytasks-edit-link"
+                                                   href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })">
+                                                    Edit
+                                                </a>
+
+                                                <form method="post"
+                                                      action="@Url.Action("Delete", "Tasks")"
+                                                      onsubmit="return confirm('Delete this task permanently?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <input type="hidden"
+                                                           name="id"
+                                                           value="@task.TaskId" />
+
+                                                    <button type="submit"
+                                                            class="mytasks-delete-btn">
+                                                        Delete
+                                                    </button>
+
+                                                </form>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+            <!-- QUICK NOTES -->
+            <section class="mytasks-tips">
+
+                <h3>Quick Notes</h3>
+
+                <div class="mytasks-tip-grid">
+
+                    <div class="mytasks-tip tip-blue">
+                        <strong>Set Clear Priorities</strong>
+                        <p>Focus on high-priority tasks first.</p>
+                    </div>
+
+                    <div class="mytasks-tip tip-green">
+                        <strong>Keep Status Updated</strong>
+                        <p>Update task status as work progresses.</p>
+                    </div>
+
+                    <div class="mytasks-tip tip-orange">
+                        <strong>Stay on Track</strong>
+                        <p>Check upcoming deadlines regularly.</p>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- RIGHT: TASK SUMMARY -->
+        <aside class="mytasks-sidebar">
+
+            <section class="mytasks-panel">
+
+                <div class="mytasks-panel-header">
+                    <h2>Task Summary</h2>
+                </div>
+
+                <div class="mytasks-summary-grid">
+
+                    <div class="mytasks-summary-card">
+                        <strong>@total</strong>
+                        <span>Total Tasks</span>
+                    </div>
+
+                    <div class="mytasks-summary-card">
+                        <strong>@dueThisWeek</strong>
+                        <span>Due This Week</span>
+                    </div>
+
+                    <div class="mytasks-summary-card">
+                        <strong>@overdue</strong>
+                        <span>Overdue</span>
+                    </div>
+
+                    <div class="mytasks-summary-card">
+                        <strong>@completed</strong>
+                        <span>Completed</span>
+                    </div>
+
+                </div>
+
+                <div class="mytasks-completion">
+
+                    <div class="mytasks-completion-heading">
+                        <strong>Completion Rate</strong>
+                        <span>@completionRate%</span>
+                    </div>
+
+                    <div class="mytasks-progress-track">
+                        <div class="mytasks-progress-fill"
+                             style="width:@(completionRate)%">
+                        </div>
+                    </div>
+
+                    <p>@completed of @total tasks completed</p>
+
+                </div>
+
+            </section>
+
+            <!-- UPCOMING DEADLINES -->
+            <section class="mytasks-panel">
+
+                <div class="mytasks-panel-header">
+                    <h2>Upcoming Deadlines</h2>
+                </div>
+
+                <div class="mytasks-deadlines">
+
+                    @if (upcoming.Count == 0)
+                    {
+                        <p>No upcoming deadlines.</p>
+                    }
+                    else
+                    {
+                        @foreach (var task in upcoming)
+                        {
+                            <div class="mytasks-deadline-item">
+
+                                <span class="mytasks-deadline-dot"></span>
+
+                                <span class="mytasks-deadline-title">
+                                    @task.Title
+                                </span>
+
+                                <span class="mytasks-deadline-date">
+                                    @task.DueDate?.ToString("MMM dd")
+                                </span>
+
+                            </div>
+                        }
+                    }
+
+                </div>
+
+            </section>
+
+        </aside>
+
+    </div>
+
+</div>

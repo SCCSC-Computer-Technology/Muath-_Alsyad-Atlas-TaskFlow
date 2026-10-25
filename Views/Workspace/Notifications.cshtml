@@ -1,0 +1,317 @@
+﻿
+@* App #1 - Atlas TaskFlow - Notifications Wireframe *@
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Notifications";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+}
+
+<div class="wf-page">
+
+    <div class="wf-heading">
+        <div>
+            <h1>Notifications</h1>
+            <p>Stay updated on tasks, deadlines, mentions, and team activity.</p>
+        </div>
+
+        <div class="wf-actions">
+            <button type="button"
+                    id="markAllRead"
+                    class="wf-btn wf-btn-primary">
+                Mark All Read
+            </button>
+
+            <a class="wf-btn wf-btn-outline"
+               href="@Url.Action("Settings","Workspace")#notifications">
+                Notification Settings
+            </a>
+        </div>
+    </div>
+
+    <div class="wf-demo-label">
+        Notification Preview — marking as read changes this screen only.
+    </div>
+
+    <!-- STATISTICS -->
+    <div class="wf-stats-four">
+
+        <div class="wf-stat-card">
+            <span>All Notifications</span>
+            <strong>18</strong>
+            <small>Sample activity</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Unread</span>
+            <strong id="unreadCount">3</strong>
+            <small>Needs attention</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Mentions</span>
+            <strong>4</strong>
+            <small>From teammates</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Due Today</span>
+            <strong>3</strong>
+            <small>Upcoming reminders</small>
+        </div>
+
+    </div>
+
+    <div class="wf-layout">
+
+        <!-- LEFT -->
+        <div class="wf-main">
+
+            <section class="wf-panel">
+
+                <div class="wf-panel-heading">
+                    <h2>Recent Notifications</h2>
+                    <a href="@Url.Action("TeamTasks","Workspace")">Team Activity →</a>
+                </div>
+
+                <!-- NOTIFICATION FILTERS -->
+                <div class="wf-chips wf-notice-chips" id="noticeChips">
+
+                    <button type="button" class="wf-chip active"
+                            data-notice-filter="all">
+                        All
+                    </button>
+
+                    <button type="button" class="wf-chip"
+                            data-notice-filter="unread">
+                        Unread
+                    </button>
+
+                    <button type="button" class="wf-chip"
+                            data-notice-filter="mention">
+                        Mentions
+                    </button>
+
+                    <button type="button" class="wf-chip"
+                            data-notice-filter="reminder">
+                        Reminders
+                    </button>
+
+                    <button type="button" class="wf-chip"
+                            data-notice-filter="task">
+                        Tasks
+                    </button>
+
+                    <button type="button" class="wf-chip"
+                            data-notice-filter="project">
+                        Projects
+                    </button>
+
+                </div>
+
+                <!-- NOTIFICATION ROWS -->
+                <div class="wf-notifications" id="notificationRows">
+
+                    <div class="wf-notice unread"
+                         data-notice-row data-type="mention"
+                         data-read="false">
+
+                        <span class="wf-notice-icon purple">✦</span>
+
+                        <div class="wf-notice-body">
+                            <strong>Taylor mentioned you in "UX Design".</strong>
+                            <p>Please review the latest wireframe updates.</p>
+                        </div>
+
+                        <small>10 min ago</small>
+
+                        <a href="@Url.Action("TeamTasks","Workspace")">
+                            View
+                        </a>
+                    </div>
+
+                    <div class="wf-notice unread"
+                         data-notice-row data-type="reminder"
+                         data-read="false">
+
+                        <span class="wf-notice-icon orange">!</span>
+
+                        <div class="wf-notice-body">
+                            <strong>Deadline approaching: "Write project proposal".</strong>
+                            <p>A task deadline needs your attention.</p>
+                        </div>
+
+                        <small>25 min ago</small>
+
+                        <a href="@Url.Action("Calendar","Workspace")">
+                            Calendar
+                        </a>
+                    </div>
+
+                    <div class="wf-notice unread"
+                         data-notice-row data-type="task"
+                         data-read="false">
+
+                        <span class="wf-notice-icon green">✓</span>
+
+                        <div class="wf-notice-body">
+                            <strong>Jordan completed "Research notes".</strong>
+                            <p>Team task progress has changed.</p>
+                        </div>
+
+                        <small>1 hour ago</small>
+
+                        <a href="@Url.Action("TeamTasks","Workspace")">
+                            View
+                        </a>
+                    </div>
+
+                    <div class="wf-notice"
+                         data-notice-row data-type="task"
+                         data-read="true">
+
+                        <span class="wf-notice-icon blue">+</span>
+
+                        <div class="wf-notice-body">
+                            <strong>Jamie assigned you to "Prepare presentation".</strong>
+                            <p>A new task was added to the preview workspace.</p>
+                        </div>
+
+                        <small>2 hours ago</small>
+
+                        <a href="@Url.Action("Index","Tasks")">
+                            My Tasks
+                        </a>
+                    </div>
+
+                    <div class="wf-notice"
+                         data-notice-row data-type="reminder"
+                         data-read="true">
+
+                        <span class="wf-notice-icon orange">◷</span>
+
+                        <div class="wf-notice-body">
+                            <strong>Milestone reminder: Prototype review.</strong>
+                            <p>The preview milestone is coming soon.</p>
+                        </div>
+
+                        <small>Yesterday</small>
+
+                        <a href="@Url.Action("Calendar","Workspace")">
+                            Calendar
+                        </a>
+                    </div>
+
+                    <div class="wf-notice"
+                         data-notice-row data-type="project"
+                         data-read="true">
+
+                        <span class="wf-notice-icon blue">▣</span>
+
+                        <div class="wf-notice-body">
+                            <strong>Project "Web Development" was updated.</strong>
+                            <p>Project details have changed.</p>
+                        </div>
+
+                        <small>Yesterday</small>
+
+                        <a href="@Url.Action("Index","Projects")">
+                            Projects
+                        </a>
+                    </div>
+
+                </div>
+
+                <p class="wf-empty" id="noticeEmpty" hidden>
+                    No notifications match this filter.
+                </p>
+
+            </section>
+
+            <!-- ACTIVITY DIGEST -->
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Activity Digest</h2>
+                    <a href="@Url.Action("TeamTasks","Workspace")">View Team →</a>
+                </div>
+
+                <div class="wf-mini-activity">
+                    <p>✓ 3 tasks completed today</p>
+                    <p>▣ 2 project updates require review</p>
+                    <p>✦ 4 mentions in team discussions</p>
+                    <p>◷ 2 deadlines are coming up</p>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT -->
+        <aside class="wf-side">
+
+            <section class="wf-panel">
+
+                <div class="wf-panel-heading">
+                    <h2>Notification Summary</h2>
+                </div>
+
+                <div class="wf-donut-wrap">
+                    <div class="wf-donut">
+                        <strong>61%</strong>
+                    </div>
+
+                    <div class="wf-donut-legend">
+                        <p><span class="wf-dot red"></span> Reminders</p>
+                        <p><span class="wf-dot blue"></span> Tasks</p>
+                        <p><span class="wf-dot purple"></span> Mentions</p>
+                        <p><span class="wf-dot green"></span> Projects</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Quick Filters</h2>
+                </div>
+
+                <div class="wf-quick-links">
+                    <a href="@Url.Action("Index","Tasks")">My Tasks</a>
+                    <a href="@Url.Action("TeamTasks","Workspace")">Team Tasks</a>
+                    <a href="@Url.Action("Calendar","Workspace")">Calendar</a>
+                    <a href="@Url.Action("Index","Projects")">Projects</a>
+                </div>
+
+            </section>
+
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Delivery Preferences</h2>
+                    <a href="@Url.Action("Settings","Workspace")#notifications">
+                        Manage Settings →
+                    </a>
+                </div>
+
+                <div class="wf-settings-list">
+                    <label>Email Alerts <input type="checkbox" checked /></label>
+                    <label>Push Notifications <input type="checkbox" checked /></label>
+                    <label>Weekly Summary <input type="checkbox" /></label>
+                </div>
+
+                <p class="wf-muted-note">
+                    These switches are a UI preview and do not save preferences.
+                </p>
+
+            </section>
+
+        </aside>
+
+    </div>
+</div>
+
+<script src="@Url.Content("~/js/workspace.js")"></script>

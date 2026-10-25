@@ -1,0 +1,557 @@
+﻿
+/* =======================================
+   ATLAS TASKFLOW - SHARED APP STYLES
+   Sidebar, Topbar, Layout, Global Theme
+   ======================================= */
+
+/* 1. THEME VARIABLES */
+
+:root {
+    --primary: #2863ef;
+    --primary-dark: #194fcf;
+    --primary-light: #edf4ff;
+    --text-dark: #17233b;
+    --text-muted: #667792;
+    --page-bg: #f6f9fc;
+    --surface: #ffffff;
+    --border: #dfe7f1;
+    --sidebar-width: 185px;
+    --topbar-height: 56px;
+    --radius: 10px;
+}
+
+/* 2. GLOBAL RESET */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    background: var(--page-bg);
+    color: var(--text-dark);
+}
+
+button,
+input {
+    font: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* 3. ICON SYSTEM */
+
+.icon-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.brand-icon {
+    width: 25px;
+    height: 25px;
+    flex-shrink: 0;
+    transition: transform .25s ease;
+}
+
+.brand-link:hover .brand-icon {
+    transform: rotate(-6deg) scale(1.08);
+}
+
+/* 4. MAIN APP LAYOUT */
+
+.app-shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+/* 5. SIDEBAR */
+
+.app-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 11px 15px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+}
+
+.sidebar-brand {
+    padding: 0 4px 18px;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.brand-name {
+    font-size: 11px;
+    letter-spacing: -.4px;
+    font-weight: 500;
+}
+
+    .brand-name strong {
+        color: #152447;
+        font-weight: 800;
+    }
+
+.brand-description {
+    margin: 6px 0 0;
+    color: #92a1ba;
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+/* 6. SIDEBAR NAVIGATION */
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 35px;
+    padding: 8px 11px;
+    border-radius: 8px;
+    color: #4e6079;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+
+    .nav-item .icon {
+        width: 17px;
+        height: 17px;
+    }
+
+a.nav-item:hover {
+    background: #f2f6fe;
+    color: var(--primary);
+    transform: translateX(3px);
+}
+
+.nav-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.nav-soon {
+    cursor: default;
+}
+
+/* 7. SIDEBAR BOTTOM */
+
+.sidebar-secondary {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.sidebar-version {
+    margin-top: auto;
+    margin-bottom: 0;
+    padding: 0 4px;
+    color: #a1b0c7;
+    font-size: 9px;
+}
+
+/* 8. MAIN AREA */
+
+.app-main {
+    min-width: 0;
+}
+
+.app-content {
+    padding: 21px 24px 30px;
+}
+
+/* 9. TOPBAR */
+
+.app-topbar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: var(--topbar-height);
+    padding: 8px 23px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+/* 10. SEARCH FIELD */
+
+.topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 300px;
+    max-width: 55%;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #f8fafd;
+    color: #5a6a85;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+    .topbar-search:focus-within {
+        border-color: #6384ed;
+        box-shadow: 0 0 0 3px #e8efff;
+    }
+
+    .topbar-search .icon {
+        width: 17px;
+        height: 17px;
+    }
+
+    .topbar-search input {
+        width: 100%;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 11px;
+        color: var(--text-dark);
+    }
+
+        .topbar-search input::placeholder {
+            color: #9caec7;
+        }
+
+        .topbar-search input:disabled {
+            opacity: 1;
+            cursor: not-allowed;
+        }
+
+/* 11. TOPBAR RIGHT SIDE */
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.notification-icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    color: #465773;
+}
+
+.notification-dot {
+    position: absolute;
+    right: 3px;
+    top: 2px;
+    width: 7px;
+    height: 7px;
+    background: #ed4b57;
+    border: 1px solid white;
+    border-radius: 50%;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-avatar {
+    display: grid;
+    place-items: center;
+    width: 33px;
+    height: 33px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient( 135deg, #b9d8ff, #6d74e8 );
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+    .profile-info strong {
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .profile-info span {
+        color: #9ca9be;
+        font-size: 10px;
+    }
+
+/* 12. KEYBOARD ACCESSIBILITY */
+
+a:focus-visible,
+summary:focus-visible {
+    outline: 3px solid #89a6ff;
+    outline-offset: 3px;
+}
+
+/* 13. RESPONSIVE LAYOUT */
+
+@media (max-width: 780px) {
+
+    .app-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .app-sidebar {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-brand {
+        padding-bottom: 8px;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 5px 0;
+    }
+
+        .sidebar-nav .nav-item {
+            flex-shrink: 0;
+        }
+
+    .sidebar-secondary,
+    .sidebar-version,
+    .brand-description {
+        display: none;
+    }
+
+    .app-topbar {
+        padding: 10px 15px;
+    }
+
+    .app-content {
+        padding: 18px 14px;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .topbar-actions {
+        gap: 8px;
+    }
+
+    .profile-info {
+        display: none;
+    }
+}
+
+/* 14. REDUCED MOTION */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}
+
+
+/* App #1 - Create Task Modal */
+
+.create-task-modal {
+    width: min(760px, 95%);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    border: none;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+    .create-task-modal::backdrop {
+        background: rgba(0, 0, 0, 0.55);
+    }
+
+/* App #1 - Create Task Modal Form */
+
+.task-modal-header {
+    margin-bottom: 25px;
+}
+
+    .task-modal-header h2 {
+        margin: 0 0 8px;
+        font-size: 26px;
+        color: #111827;
+    }
+
+    .task-modal-header p {
+        margin: 0;
+        color: #8290a6;
+        font-size: 13px;
+    }
+
+.task-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.task-modal-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.task-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .task-form-field label {
+        font-size: 14px;
+        color: #273244;
+    }
+
+    .task-form-field input,
+    .task-form-field select,
+    .task-form-field textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px;
+        border: 1px solid #d9e0ec;
+        border-radius: 7px;
+        background: white;
+        color: #263449;
+        font: inherit;
+    }
+
+    .task-form-field textarea {
+        resize: vertical;
+    }
+
+        .task-form-field input:focus,
+        .task-form-field select:focus,
+        .task-form-field textarea:focus {
+            outline: 2px solid #bcd0ff;
+            border-color: #2563eb;
+        }
+
+.task-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+}
+
+    .task-modal-footer button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+.task-cancel-btn,
+.task-draft-btn {
+    border: 1px solid #2563eb;
+    background: white;
+}
+
+.task-create-btn {
+    border: 1px solid #2563eb;
+    background: #2563eb;
+    color: white;
+}
+
+.task-modal-footer button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+    .task-modal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Team Visibility */
+
+.task-visibility {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+    .task-visibility strong {
+        font-size: 14px;
+        color: #273244;
+    }
+
+    .task-visibility p {
+        margin: 5px 0 0;
+        color: #8290a6;
+        font-size: 11px;
+    }
+
+    .task-visibility input {
+        width: 20px;
+        height: 20px;
+        accent-color: #2563eb;
+        cursor: pointer;
+    }
+
+/* Adjust modal width and scrolling */
+
+.create-task-modal {
+    width: min(850px, 95vw);
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+}

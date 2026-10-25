@@ -1,298 +1,582 @@
 ﻿
-@* App #1 - Atlas TaskFlow - Team Tasks Wireframe *@
+@model Atlas_TaskFlow_App.ViewModels.TeamTasksPageViewModel
 
 @{
     Layout = "_AppLayout";
     ViewData["Title"] = "Team Tasks";
+
+    string? message = TempData["TeamMessage"] as string;
+    string? error = TempData["TeamError"] as string;
+
+    int totalTasks = Model.AllTasks.Count;
+
+    int assignedTasks = Model.AllTasks.Count(
+        t => t.MemberId.HasValue
+    );
+
+    int completedTasks = Model.AllTasks.Count(
+        t => t.Status == "Completed"
+    );
+
+    int unassignedTasks = totalTasks - assignedTasks;
 }
 
 @section Styles {
-    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+    <link rel="stylesheet" href="~/css/workspace.css" />
+    <link rel="stylesheet" href="~/css/team-tasks-live.css" />
 }
 
 <div class="wf-page">
 
+    <!-- HEADER -->
     <div class="wf-heading">
+
         <div>
             <h1>Team Tasks</h1>
-            <p>Work together, stay organized, and track team progress.</p>
+            <p>
+                Assign tasks, manage team members,
+                and track real project progress.
+            </p>
         </div>
 
         <div class="wf-actions">
+
             <a class="wf-btn wf-btn-primary"
                href="@Url.Action("Index", "Tasks")">
                 + New Task
             </a>
 
-            <button type="button" class="wf-btn wf-btn-outline"
-                    disabled title="Team invitations will be developed later">
-                Invite Member
-            </button>
+            <a class="wf-btn wf-btn-outline"
+               href="#addTeamMember">
+                + Add Member
+            </a>
+
         </div>
     </div>
 
-    <div class="wf-demo-label">
-        UI Preview — team assignments are sample data.
+    <!-- MESSAGES -->
+    @if (message != null)
+    {
+        <div class="team-alert team-success" role="status">
+            @message
+        </div>
+    }
+
+    @if (error != null)
+    {
+        <div class="team-alert team-error" role="alert">
+            @error
+        </div>
+    }
+
+    <!-- LIVE STATISTICS -->
+    <div class="wf-stats-four">
+
+        <div class="wf-stat-card">
+            <span>Total Tasks</span>
+            <strong>@totalTasks</strong>
+            <small>From SQL Server</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Assigned Tasks</span>
+            <strong>@assignedTasks</strong>
+            <small>Linked to a team member</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Unassigned Tasks</span>
+            <strong>@unassignedTasks</strong>
+            <small>Need an owner</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Completed Tasks</span>
+            <strong>@completedTasks</strong>
+            <small>Marked completed</small>
+        </div>
+
     </div>
 
     <!-- FILTERS -->
     <section class="wf-panel wf-filter-panel">
 
-        <div class="wf-filter-row">
+        <form method="get"
+              action="@Url.Action("TeamTasks", "Workspace")">
 
-            <input class="wf-input wf-search"
-                   type="search"
-                   id="teamSearch"
-                   placeholder="Search team tasks..." />
+            <div class="wf-filter-row">
 
-            <select class="wf-select" id="teamProject">
-                <option value="">All Projects</option>
-                <option>Web Development</option>
-                <option>UX Design</option>
-                <option>Group Project</option>
-            </select>
+                <input type="search"
+                       class="wf-input wf-search"
+                       name="search"
+                       value="@Model.Search"
+                       placeholder="Search tasks..." />
 
-            <select class="wf-select" id="teamMember">
-                <option value="">All Members</option>
-                <option>Alex</option>
-                <option>Taylor</option>
-                <option>Jordan</option>
-                <option>Jamie</option>
-            </select>
+                <select name="projectId" class="wf-select">
 
-            <select class="wf-select" id="teamPriority">
-                <option value="">All Priorities</option>
-                <option>Low</option>
-                <option>Medium</option>
-                <option>High</option>
-            </select>
+                    <option value="">All Projects</option>
 
-            <select class="wf-select" id="teamStatus">
-                <option value="">All Statuses</option>
-                <option>To Do</option>
-                <option>In Progress</option>
-                <option>Review</option>
-                <option>Completed</option>
-            </select>
+                    @foreach (var project in Model.Projects)
+                    {
+                        <option value="@project.ProjectId"
+                                selected="@(Model.ProjectId == project.ProjectId)">
+                            @project.Name
+                        </option>
+                    }
 
-        </div>
+                </select>
 
-        <div class="wf-chips" id="teamChips">
-            <button type="button" class="wf-chip active" data-team-tab="All">All</button>
-            <button type="button" class="wf-chip" data-team-tab="To Do">To Do</button>
-            <button type="button" class="wf-chip" data-team-tab="In Progress">In Progress</button>
-            <button type="button" class="wf-chip" data-team-tab="Review">Review</button>
-            <button type="button" class="wf-chip" data-team-tab="Completed">Completed</button>
-        </div>
+                <select name="memberId" class="wf-select">
+
+                    <option value="">All Members</option>
+
+                    <option value="0"
+                            selected="@(Model.MemberId == 0)">
+                        Unassigned
+                    </option>
+
+                    @foreach (var member in Model.Members)
+                    {
+                        <option value="@member.MemberId"
+                                selected="@(Model.MemberId == member.MemberId)">
+                            @member.FullName
+                        </option>
+                    }
+
+                </select>
+
+                <select name="priority" class="wf-select">
+
+                    <option value="">All Priorities</option>
+
+                    @foreach (var priority in Model.Priorities)
+                    {
+                        <option value="@priority"
+                                selected="@(Model.Priority == priority)">
+                            @priority
+                        </option>
+                    }
+
+                </select>
+
+                <select name="status" class="wf-select">
+
+                    <option value="">All Statuses</option>
+
+                    @foreach (var status in Model.Statuses)
+                    {
+                        <option value="@status"
+                                selected="@(Model.Status == status)">
+                            @status
+                        </option>
+                    }
+
+                </select>
+
+                <button class="wf-btn wf-btn-primary"
+                        type="submit">
+                    Apply
+                </button>
+
+                <a class="wf-btn wf-btn-outline"
+                   href="@Url.Action("TeamTasks", "Workspace")">
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
 
     </section>
 
     <div class="wf-layout">
 
-        <!-- LEFT COLUMN -->
-        <div class="wf-main">
+        <!-- MAIN CONTENT -->
+        <main class="wf-main">
 
+            <!-- TASK TABLE -->
             <section class="wf-panel">
 
                 <div class="wf-panel-heading">
+
                     <h2>Team Task List</h2>
 
-                    <a href="@Url.Action("Index", "Tasks")">
-                        View All Tasks →
-                    </a>
+                    <span class="team-result-count">
+                        @Model.Tasks.Count of @totalTasks tasks
+                    </span>
+
                 </div>
 
                 <div class="wf-table-scroll">
 
-                    <table class="wf-table">
+                    <table class="wf-table team-live-table">
+
                         <thead>
                             <tr>
                                 <th>Task</th>
                                 <th>Project</th>
-                                <th>Assigned To</th>
                                 <th>Due Date</th>
                                 <th>Priority</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th>Assigned To</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
 
-                        <tbody id="teamTaskRows">
+                        <tbody>
 
-                            <tr data-team-row data-project="Web Development"
-                                data-member="Jordan" data-priority="High"
-                                data-status="In Progress">
-                                <td><strong>Design homepage</strong></td>
-                                <td>Web Development</td>
-                                <td>Jordan</td>
-                                <td>Oct 25, 2026</td>
-                                <td><span class="wf-pill wf-high">High</span></td>
-                                <td><span class="wf-pill wf-blue">In Progress</span></td>
-                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
-                            </tr>
+                            @foreach (var task in Model.Tasks)
+                            {
+                                <tr>
 
-                            <tr data-team-row data-project="UX Design"
-                                data-member="Taylor" data-priority="High"
-                                data-status="To Do">
-                                <td><strong>User research</strong></td>
-                                <td>UX Design</td>
-                                <td>Taylor</td>
-                                <td>Oct 26, 2026</td>
-                                <td><span class="wf-pill wf-high">High</span></td>
-                                <td><span class="wf-pill wf-gray">To Do</span></td>
-                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
-                            </tr>
+                                    <!-- TASK -->
+                                    <td>
+                                        <a class="team-task-title"
+                                           href="@Url.Action("Edit", "Tasks",
+                                               new { id = task.TaskId })">
+                                            @task.Title
+                                        </a>
 
-                            <tr data-team-row data-project="UX Design"
-                                data-member="Alex" data-priority="Medium"
-                                data-status="To Do">
-                                <td><strong>Create wireframes</strong></td>
-                                <td>UX Design</td>
-                                <td>Alex</td>
-                                <td>Oct 27, 2026</td>
-                                <td><span class="wf-pill wf-medium">Medium</span></td>
-                                <td><span class="wf-pill wf-gray">To Do</span></td>
-                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
-                            </tr>
+                                        <small class="team-task-id">
+                                            Task #@task.TaskId
+                                        </small>
+                                    </td>
 
-                            <tr data-team-row data-project="Web Development"
-                                data-member="Jamie" data-priority="Medium"
-                                data-status="In Progress">
-                                <td><strong>API documentation</strong></td>
-                                <td>Web Development</td>
-                                <td>Jamie</td>
-                                <td>Oct 28, 2026</td>
-                                <td><span class="wf-pill wf-medium">Medium</span></td>
-                                <td><span class="wf-pill wf-blue">In Progress</span></td>
-                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
-                            </tr>
+                                    <!-- PROJECT -->
+                                    <td>@task.ProjectName</td>
 
-                            <tr data-team-row data-project="Group Project"
-                                data-member="Taylor" data-priority="Medium"
-                                data-status="Completed">
-                                <td><strong>Prepare presentation</strong></td>
-                                <td>Group Project</td>
-                                <td>Taylor</td>
-                                <td>Oct 30, 2026</td>
-                                <td><span class="wf-pill wf-medium">Medium</span></td>
-                                <td><span class="wf-pill wf-green">Completed</span></td>
-                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
-                            </tr>
+                                    <!-- DUE DATE -->
+                                    <td>
+                                        @(task.DueDate?.ToString("MMM dd, yyyy")
+                                            ?? "Not set")
+                                    </td>
 
-                            <tr data-team-row data-project="Web Development"
-                                data-member="Jamie" data-priority="Low"
-                                data-status="Review">
-                                <td><strong>Test application</strong></td>
-                                <td>Web Development</td>
-                                <td>Jamie</td>
-                                <td>Nov 01, 2026</td>
-                                <td><span class="wf-pill wf-green">Low</span></td>
-                                <td><span class="wf-pill wf-purple">Review</span></td>
-                                <td><a href="@Url.Action("Index","Tasks")">View</a></td>
-                            </tr>
+                                    <!-- PRIORITY -->
+                                    <td>
+                                        <span class="team-pill
+                                            @(task.Priority == "High" ||
+                                              task.Priority == "Urgent"
+                                                ? "team-priority-high"
+                                                : task.Priority == "Medium"
+                                                    ? "team-priority-medium"
+                                                    : "team-priority-low")">
+                                            @task.Priority
+                                        </span>
+                                    </td>
+
+                                    <!-- STATUS -->
+                                    <td>
+                                        <span class="team-pill
+                                            @(task.Status == "Completed"
+                                                ? "team-status-completed"
+                                                : "team-status-open")">
+                                            @task.Status
+                                        </span>
+                                    </td>
+
+                                    <!-- ASSIGNED MEMBER -->
+                                    <td>
+                                        <span class="team-assignee">
+                                            @task.AssigneeName
+                                        </span>
+                                    </td>
+
+                                    <!-- ASSIGNMENT FORM -->
+                                    <td>
+
+                                        <form method="post"
+                                              class="team-assign-form"
+                                              action="@Url.Action("AssignTask", "Workspace")">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="taskId"
+                                                   value="@task.TaskId" />
+
+                                            <select name="memberId"
+                                                    class="wf-select"
+                                                    aria-label="Assign @task.Title">
+
+                                                <option value="0"
+                                                        selected="@(!task.MemberId.HasValue)">
+                                                    Unassigned
+                                                </option>
+
+                                                @foreach (var member in Model.Members)
+                                                {
+                                                    <option value="@member.MemberId"
+                                                            selected="@(task.MemberId == member.MemberId)">
+                                                        @member.FullName
+                                                    </option>
+                                                }
+
+                                            </select>
+
+                                            <button type="submit"
+                                                    class="wf-btn wf-btn-primary wf-btn-small">
+                                                Save
+                                            </button>
+
+                                        </form>
+
+                                    </td>
+
+                                </tr>
+                            }
 
                         </tbody>
+
                     </table>
 
                 </div>
 
-                <p class="wf-empty" id="teamEmpty" hidden>
-                    No sample tasks match your filters.
-                </p>
+                @if (Model.Tasks.Count == 0)
+                {
+                    <div class="wf-empty">
+
+                        <h3>No matching tasks</h3>
+
+                        <p>
+                            Try clearing the filters,
+                            or create your first task.
+                        </p>
+
+                        <a class="wf-btn wf-btn-primary"
+                           href="@Url.Action("Index", "Tasks")">
+                            Open My Tasks
+                        </a>
+
+                    </div>
+                }
 
             </section>
 
-            <!-- UPCOMING DEADLINES -->
+            <!-- REAL PROJECT PROGRESS -->
             <section class="wf-panel wf-section-gap">
 
-                <div class="wf-panel-heading">
-                    <h2>Team Upcoming Deadlines</h2>
-
-                    <a href="@Url.Action("Calendar","Workspace")">
-                        View Calendar →
-                    </a>
-                </div>
-
-                <div class="wf-list">
-                    <div class="wf-list-item">
-                        <span class="wf-dot red"></span>
-                        <strong>Design homepage</strong>
-                        <span>Web Development</span>
-                        <small>Oct 25</small>
-                    </div>
-
-                    <div class="wf-list-item">
-                        <span class="wf-dot red"></span>
-                        <strong>User research</strong>
-                        <span>UX Design</span>
-                        <small>Oct 26</small>
-                    </div>
-
-                    <div class="wf-list-item">
-                        <span class="wf-dot orange"></span>
-                        <strong>API documentation</strong>
-                        <span>Web Development</span>
-                        <small>Oct 28</small>
-                    </div>
-                </div>
-
-            </section>
-
-        </div>
-
-        <!-- RIGHT COLUMN -->
-        <aside class="wf-side">
-
-            <section class="wf-panel">
-                <div class="wf-panel-heading">
-                    <h2>Team Members</h2>
-                    <a href="@Url.Action("Settings","Workspace")">View Settings →</a>
-                </div>
-
-                <div class="wf-members">
-                    <div class="wf-member"><span class="wf-avatar">AS</span><div><strong>Alex Student</strong><small>Team Member</small></div><i class="wf-online"></i></div>
-                    <div class="wf-member"><span class="wf-avatar">TS</span><div><strong>Taylor Smith</strong><small>Team Member</small></div><i class="wf-online"></i></div>
-                    <div class="wf-member"><span class="wf-avatar">JD</span><div><strong>Jamie Davis</strong><small>Team Member</small></div><i class="wf-away"></i></div>
-                    <div class="wf-member"><span class="wf-avatar">JL</span><div><strong>Jordan Lee</strong><small>Team Member</small></div><i class="wf-offline"></i></div>
-                </div>
-            </section>
-
-            <section class="wf-panel wf-section-gap">
                 <div class="wf-panel-heading">
                     <h2>Project Progress</h2>
-                    <a href="@Url.Action("Index","Projects")">View Projects →</a>
+
+                    <a href="@Url.Action("Index", "Projects")">
+                        View Projects
+                    </a>
                 </div>
 
                 <div class="wf-progress-list">
-                    <label>Web Development <small>60%</small></label>
-                    <div class="wf-progress"><span style="width:60%"></span></div>
 
-                    <label>UX Design <small>40%</small></label>
-                    <div class="wf-progress"><span style="width:40%"></span></div>
+                    @foreach (var project in Model.Projects)
+                    {
+                        var projectTasks = Model.AllTasks
+                            .Where(t => t.ProjectId == project.ProjectId)
+                            .ToList();
 
-                    <label>Group Project <small>20%</small></label>
-                    <div class="wf-progress"><span style="width:20%"></span></div>
+                        int taskCount = projectTasks.Count;
+
+                        int doneCount = projectTasks.Count(
+                            t => t.Status == "Completed"
+                        );
+
+                        int percent = taskCount == 0
+                            ? 0
+                            : (int)Math.Round(
+                                doneCount * 100.0 / taskCount
+                            );
+
+                        <label>
+                            @project.Name
+                            <small>
+                                @doneCount / @taskCount tasks
+                                (@(percent)%)
+                            </small>
+                        </label>
+
+                        <div class="wf-progress">
+                            <span style="width:@(percent)%"></span>
+                        </div>
+                    }
+
+                    @if (Model.Projects.Count == 0)
+                    {
+                        <p class="wf-empty">
+                            No projects available.
+                        </p>
+                    }
+
                 </div>
+
             </section>
 
-            <section class="wf-panel wf-section-gap">
+        </main>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="wf-side">
+
+            <!-- TEAM MEMBERS -->
+            <section class="wf-panel">
+
                 <div class="wf-panel-heading">
-                    <h2>Recent Team Activity</h2>
-                    <a href="@Url.Action("Notifications","Workspace")">
-                        View All →
+
+                    <h2>Team Members (@Model.Members.Count)</h2>
+
+                    <a href="#addTeamMember">
+                        Add Member
                     </a>
+
                 </div>
 
-                <div class="wf-mini-activity">
-                    <p>Jordan completed <strong>Research notes</strong>.</p>
-                    <p>Taylor commented on <strong>Design homepage</strong>.</p>
-                    <p>Jamie joined <strong>Web Development</strong>.</p>
+                <div class="wf-members">
+
+                    @foreach (var member in Model.Members)
+                    {
+                        int memberTaskCount = Model.AllTasks
+                            .Count(t => t.MemberId == member.MemberId);
+
+                        <div class="wf-member">
+
+                            <span class="wf-avatar">
+                                @(member.FullName.Length > 0
+                                    ? member.FullName.Substring(0, 1).ToUpper()
+                                    : "?")
+                            </span>
+
+                            <div>
+                                <strong>@member.FullName</strong>
+
+                                <small>
+                                    @member.Role ·
+                                    @memberTaskCount task(s)
+                                </small>
+
+                                @if (!string.IsNullOrWhiteSpace(member.Email))
+                                {
+                                    <small>@member.Email</small>
+                                }
+
+                            </div>
+
+                            <i class="wf-online"></i>
+
+                        </div>
+                    }
+
+                    @if (Model.Members.Count == 0)
+                    {
+                        <p class="wf-empty">
+                            No team members yet.
+                        </p>
+                    }
+
                 </div>
+
+            </section>
+
+            <!-- ADD MEMBER -->
+            <section class="wf-panel wf-section-gap"
+                     id="addTeamMember">
+
+                <div class="wf-panel-heading">
+                    <h2>Add Team Member</h2>
+                </div>
+
+                <form method="post"
+                      class="team-add-member-form"
+                      action="@Url.Action("CreateMember", "Workspace")">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="wf-field">
+
+                        <label for="teamFullName">
+                            Full Name
+                        </label>
+
+                        <input id="teamFullName"
+                               name="fullName"
+                               maxlength="100"
+                               minlength="2"
+                               required
+                               placeholder="Enter member name" />
+
+                    </div>
+
+                    <div class="wf-field">
+
+                        <label for="teamEmail">
+                            Email (Optional)
+                        </label>
+
+                        <input id="teamEmail"
+                               name="email"
+                               type="email"
+                               maxlength="256"
+                               placeholder="name@example.com" />
+
+                    </div>
+
+                    <div class="wf-field">
+
+                        <label for="teamRole">
+                            Team Role (Display Only)
+                        </label>
+
+                        <select id="teamRole"
+                                name="role">
+
+                            <option value="Member">
+                                Member
+                            </option>
+
+                            <option value="Lead">
+                                Lead
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <button type="submit"
+                            class="wf-btn wf-btn-primary team-full-width">
+                        Add Member
+                    </button>
+
+                    <p class="team-form-note">
+                        This creates a team record.
+                        It does not create a login account
+                        or send an email invitation.
+                    </p>
+
+                </form>
+
+            </section>
+
+            <!-- NAVIGATION -->
+            <section class="wf-panel wf-section-gap">
+
+                <div class="wf-panel-heading">
+                    <h2>Quick Actions</h2>
+                </div>
+
+                <div class="wf-quick-links">
+
+                    <a href="@Url.Action("Index", "Tasks")">
+                        Manage My Tasks
+                    </a>
+
+                    <a href="@Url.Action("Index", "Projects")">
+                        Manage Projects
+                    </a>
+
+                    <a href="@Url.Action("Calendar", "Workspace")">
+                        View Calendar
+                    </a>
+
+                </div>
+
             </section>
 
         </aside>
 
     </div>
-</div>
 
-<script src="@Url.Content("~/js/workspace.js")"></script>
+</div>

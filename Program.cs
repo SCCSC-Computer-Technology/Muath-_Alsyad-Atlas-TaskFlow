@@ -26,6 +26,14 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+
+builder.Services.AddDbContext<Atlas_TaskFlow_App.Data.TeamDataContext>(
+    options => options.UseSqlServer(
+        builder.Configuration.GetConnectionString("TaskFlowConnection")
+    )
+);
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

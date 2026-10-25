@@ -1,40 +1,111 @@
 ﻿
-@* App #1 - Atlas TaskFlow - Calendar Wireframe *@
+@model List<Atlas_TaskFlow_App.Models.TaskItem>
 
 @{
     Layout = "_AppLayout";
     ViewData["Title"] = "Calendar";
+
+    var projects =
+        ViewBag.ProjectList as
+        List<Atlas_TaskFlow_App.Models.Project>
+        ?? new List<Atlas_TaskFlow_App.Models.Project>();
+
+    int totalTasks = Model.Count;
+
+    int completedTasks = Model.Count(
+        t => t.Status == "Completed"
+    );
+
+    int unfinishedTasks = totalTasks - completedTasks;
 }
 
 @section Styles {
-    <link rel="stylesheet" href="@Url.Content("~/css/workspace.css")" />
+    <link rel="stylesheet"
+          href="@Url.Content("~/css/workspace.css")" />
 }
 
 <div class="wf-page">
 
+    <!-- HEADER -->
     <div class="wf-heading">
         <div>
             <h1>Calendar</h1>
-            <p>View and manage your tasks, deadlines, and team events.</p>
+            <p>View real tasks and deadlines from SQL Server.</p>
         </div>
 
-        <button type="button" class="wf-btn wf-btn-primary"
-                disabled title="Event creation will be developed later">
-            + New Event
-        </button>
+        <div class="wf-actions">
+
+            <button type="button"
+                    class="wf-btn wf-btn-primary"
+                    onclick="document.getElementById('createTaskDialog').showModal()">
+                + New Task
+            </button>
+
+            <button type="button"
+                    class="wf-btn wf-btn-outline"
+                    disabled
+                    title="Separate events will be added later">
+                + New Event
+            </button>
+
+        </div>
     </div>
 
-    <div class="wf-demo-label">
-        Calendar Preview — events are sample data, not SQL Server records.
+    <!-- REAL DATA SUMMARY -->
+    <div class="wf-stats-four">
+
+        <div class="wf-stat-card">
+            <span>Scheduled Tasks</span>
+            <strong>@totalTasks</strong>
+            <small>From SQL Server</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Unfinished Tasks</span>
+            <strong>@unfinishedTasks</strong>
+            <small>Not completed</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Completed Tasks</span>
+            <strong>@completedTasks</strong>
+            <small>Finished work</small>
+        </div>
+
+        <div class="wf-stat-card">
+            <span>Projects</span>
+            <strong>@projects.Count</strong>
+            <small>Available projects</small>
+        </div>
+
+    </div>
+
+    <!-- DATA RECEIVED FROM RAZOR -->
+    <div id="calendarTaskData" hidden>
+
+        @foreach (var task in Model)
+        {
+            <span data-calendar-task
+                  data-id="@task.TaskId"
+                  data-date="@(task.DueDate?.ToString("yyyy-MM-dd"))"
+                  data-project="@(task.Project?.Name ?? "Unknown")"
+                  data-priority="@task.Priority"
+                  data-status="@task.Status"
+                  data-edit-url="@Url.Action("Edit", "Tasks", new { id = task.TaskId })">
+                @task.Title
+            </span>
+        }
+
     </div>
 
     <div class="wf-layout">
 
+        <!-- MAIN CALENDAR -->
         <div class="wf-main">
 
-            <!-- CALENDAR -->
             <section class="wf-panel">
 
+                <!-- CALENDAR TOOLBAR -->
                 <div class="wf-calendar-toolbar">
 
                     <div class="wf-calendar-month-controls">
@@ -56,12 +127,17 @@
                             ›
                         </button>
 
-                        <strong id="calendarMonthLabel">October 2026</strong>
+                        <strong id="calendarMonthLabel">
+                            Calendar
+                        </strong>
+
                     </div>
 
+                    <!-- VIEW OPTIONS -->
                     <div class="wf-view-switch">
 
-                        <button type="button" class="active"
+                        <button type="button"
+                                class="active"
                                 data-calendar-view-btn="month">
                             Month
                         </button>
@@ -98,116 +174,81 @@
                         <span>Sat</span>
                     </div>
 
-                    <div id="calendarGrid" class="wf-calendar-grid"></div>
+                    <div id="calendarGrid"
+                         class="wf-calendar-grid">
+                    </div>
 
                 </div>
 
                 <!-- WEEK VIEW -->
                 <div data-calendar-panel="week" hidden>
-                    <div class="wf-alternate-calendar">
-                        <h3>This Week — Preview</h3>
-                        <p>Select Month for the complete interactive month grid.</p>
 
-                        <div class="wf-event-row">
-                            <span class="wf-dot blue"></span>
-                            Project planning meeting
-                        </div>
-                        <div class="wf-event-row">
-                            <span class="wf-dot red"></span>
-                            Finish project proposal
-                        </div>
+                    <div class="wf-alternate-calendar">
+
+                        <h3 id="calendarWeekLabel">
+                            This Week
+                        </h3>
+
+                        <div id="calendarWeekContent"></div>
+
                     </div>
+
                 </div>
 
                 <!-- DAY VIEW -->
                 <div data-calendar-panel="day" hidden>
+
                     <div class="wf-alternate-calendar">
-                        <h3>Day View — Preview</h3>
-                        <p>Selected date: <strong id="calendarDayLabel">Today</strong></p>
-                        <p id="calendarDayDetails">
-                            Select a date from Month view to view sample events.
-                        </p>
+
+                        <h3 id="calendarDayLabel">
+                            Selected Day
+                        </h3>
+
+                        <div id="calendarDayContent"></div>
+
                     </div>
+
                 </div>
 
                 <!-- LIST VIEW -->
                 <div data-calendar-panel="list" hidden>
-                    <div class="wf-alternate-calendar">
-                        <h3>Event List — Preview</h3>
 
-                        <div class="wf-event-row">
-                            <span class="wf-dot blue"></span>
-                            Write project proposal — Oct 20
-                        </div>
-                        <div class="wf-event-row">
-                            <span class="wf-dot orange"></span>
-                            Research user needs — Oct 22
-                        </div>
-                        <div class="wf-event-row">
-                            <span class="wf-dot purple"></span>
-                            Create wireframes — Oct 24
-                        </div>
-                        <div class="wf-event-row">
-                            <span class="wf-dot red"></span>
-                            Review project design — Oct 28
-                        </div>
+                    <div class="wf-alternate-calendar">
+
+                        <h3>All Scheduled Tasks</h3>
+
+                        <div id="calendarListContent"></div>
+
                     </div>
+
                 </div>
 
             </section>
 
-            <!-- TASKS DUE THIS WEEK -->
+            <!-- PAGE FOOTER -->
             <section class="wf-panel wf-section-gap">
 
                 <div class="wf-panel-heading">
-                    <h2>Tasks Due This Week</h2>
+                    <h2>Manage Scheduled Tasks</h2>
 
-                    <a href="@Url.Action("Index","Tasks")">
-                        View All →
+                    <a href="@Url.Action("Index", "Tasks")">
+                        View All Tasks
                     </a>
                 </div>
 
-                <div class="wf-table-scroll">
+                <div class="wf-mini-activity">
 
-                    <table class="wf-table">
-                        <thead>
-                            <tr>
-                                <th>Task</th>
-                                <th>Project</th>
-                                <th>Due Date</th>
-                                <th>Priority</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
+                    <p>
+                        Create or edit tasks in My Tasks.
+                        Their due dates will appear here.
+                    </p>
 
-                        <tbody>
-                            <tr>
-                                <td><strong>Research user needs</strong></td>
-                                <td>UX Design</td>
-                                <td>Oct 22</td>
-                                <td><span class="wf-pill wf-medium">Medium</span></td>
-                                <td>To Do</td>
-                            </tr>
-
-                            <tr>
-                                <td><strong>Create wireframes</strong></td>
-                                <td>UX Design</td>
-                                <td>Oct 24</td>
-                                <td><span class="wf-pill wf-high">High</span></td>
-                                <td>To Do</td>
-                            </tr>
-
-                            <tr>
-                                <td><strong>Review project design</strong></td>
-                                <td>UX Design</td>
-                                <td>Oct 28</td>
-                                <td><span class="wf-pill wf-green">Low</span></td>
-                                <td>To Do</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <p>
+                        Changes appear after refreshing Calendar.
+                    </p>
 
                 </div>
+
             </section>
 
         </div>
@@ -215,41 +256,24 @@
         <!-- RIGHT SIDEBAR -->
         <aside class="wf-side">
 
+            <!-- UPCOMING TASKS -->
             <section class="wf-panel">
 
                 <div class="wf-panel-heading">
-                    <h2>Upcoming Events</h2>
-                    <a href="@Url.Action("Index","Tasks")">View Tasks →</a>
+                    <h2>Upcoming Tasks</h2>
+
+                    <a href="@Url.Action("Index", "Tasks")">
+                        View All
+                    </a>
                 </div>
 
-                <div class="wf-event-list" id="calendarUpcoming">
-                    <div class="wf-event-item">
-                        <span class="wf-dot blue"></span>
-                        <div>
-                            <strong>Write project proposal</strong>
-                            <small>Oct 20, 2026</small>
-                        </div>
-                    </div>
-
-                    <div class="wf-event-item">
-                        <span class="wf-dot orange"></span>
-                        <div>
-                            <strong>Research user needs</strong>
-                            <small>Oct 22, 2026</small>
-                        </div>
-                    </div>
-
-                    <div class="wf-event-item">
-                        <span class="wf-dot purple"></span>
-                        <div>
-                            <strong>Create wireframes</strong>
-                            <small>Oct 24, 2026</small>
-                        </div>
-                    </div>
+                <div id="calendarUpcoming"
+                     class="wf-event-list">
                 </div>
 
             </section>
 
+            <!-- REAL FILTERS -->
             <section class="wf-panel wf-section-gap">
 
                 <div class="wf-panel-heading">
@@ -257,22 +281,51 @@
                 </div>
 
                 <div class="wf-settings-list">
-                    <label><input type="checkbox" data-cal-type="task" checked /> My Tasks</label>
-                    <label><input type="checkbox" data-cal-type="team" checked /> Team Tasks</label>
-                    <label><input type="checkbox" data-cal-type="deadline" checked /> Project Deadlines</label>
-                    <label><input type="checkbox" data-cal-type="event" checked /> Team Events</label>
+
+                    <label for="calendarProjectFilter">
+                        Project
+                    </label>
+
+                    <select id="calendarProjectFilter"
+                            class="wf-select">
+
+                        <option value="">All Projects</option>
+
+                        @foreach (var project in projects)
+                        {
+                            <option value="@project.Name">
+                                @project.Name
+                            </option>
+                        }
+
+                    </select>
+
+                    <label for="calendarStatusFilter">
+                        Status
+                    </label>
+
+                    <select id="calendarStatusFilter"
+                            class="wf-select">
+
+                        <option value="">All Statuses</option>
+                        <option value="To Do">To Do</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+
+                    </select>
+
                 </div>
 
                 <div class="wf-divider"></div>
 
                 <a class="wf-btn wf-btn-outline wf-full-button"
-                   href="@Url.Action("Index","Projects")">
+                   href="@Url.Action("Index", "Projects")">
                     View Projects
                 </a>
 
                 <a class="wf-btn wf-btn-outline wf-full-button"
-                   href="@Url.Action("TeamTasks","Workspace")">
-                    View Team Tasks
+                   href="@Url.Action("Index", "Tasks")">
+                    View My Tasks
                 </a>
 
             </section>
@@ -280,6 +333,7 @@
         </aside>
 
     </div>
+
 </div>
 
-<script src="@Url.Content("~/js/workspace.js")"></script>
+<script src="@Url.Content("~/js/calendar-live.js")"></script>

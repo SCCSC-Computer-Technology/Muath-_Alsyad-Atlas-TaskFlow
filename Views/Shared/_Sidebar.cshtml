@@ -1,36 +1,30 @@
 ﻿
 @* App #1 - Atlas TaskFlow - Complete Sidebar Navigation *@
 
+
 @{
-    string controller =
-        ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    // Get the current controller and action
+    string controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 
-    string action =
-        ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-
+    // Check which page is currently open
     bool isDashboard = controller == "Dashboard";
-
     bool isTasks = controller == "Tasks";
-
     bool isProjects = controller == "Projects";
 
-    bool isTeam = controller == "Workspace"
-                  && action == "TeamTasks";
+    bool isTeam = controller == "Workspace" && action == "TeamTasks";
 
-    bool isCalendar = controller == "Workspace"
-                      && action == "Calendar";
+    bool isCalendar = controller == "Workspace" && action == "Calendar";
 
-    bool isSettings =
-    controller == "Settings" ||
-    (controller == "Workspace" && action == "Settings");
+    bool isNotifications = controller == "Notifications" ||
+        (controller == "Workspace" && action == "Notifications");
 
+    bool isSettings = controller == "Settings" ||
+        (controller == "Workspace" && action == "Settings");
 
-    bool isSettings = controller == "Workspace"
-                      && action == "Settings";
-
-    bool isHelp = controller == "Workspace"
-                  && action == "Help";
+    bool isHelp = controller == "Workspace" && action == "Help";
 }
+
 
 <aside class="app-sidebar">
 

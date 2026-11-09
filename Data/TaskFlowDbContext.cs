@@ -1,5 +1,6 @@
 ﻿
-// App #1 - Atlas TaskFlow - Database Context
+// App #1 - Atlas TaskFlow
+// TaskFlowDbContext - Database First
 
 using Microsoft.EntityFrameworkCore;
 using Atlas_TaskFlow_App.Models;
@@ -9,8 +10,8 @@ namespace Atlas_TaskFlow_App.Data
     public class TaskFlowDbContext : DbContext
     {
         public TaskFlowDbContext(
-            DbContextOptions<TaskFlowDbContext> options
-        ) : base(options)
+            DbContextOptions<TaskFlowDbContext> options)
+            : base(options)
         {
         }
 
@@ -31,24 +32,31 @@ namespace Atlas_TaskFlow_App.Data
                 entity.HasKey(p => p.ProjectId);
 
                 entity.Property(p => p.ProjectId)
-                      .ValueGeneratedOnAdd();
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(p => p.Name)
-                      .IsRequired()
-                      .HasMaxLength(150);
+                    .IsRequired()
+                    .HasMaxLength(150);
 
                 entity.Property(p => p.Description)
-                      .HasMaxLength(500);
+                    .HasMaxLength(500);
 
                 entity.Property(p => p.StartDate)
-                      .HasColumnType("date");
+                    .HasColumnType("date");
 
                 entity.Property(p => p.DueDate)
-                      .HasColumnType("date");
+                    .HasColumnType("date");
 
                 entity.Property(p => p.Status)
-                      .IsRequired()
-                      .HasMaxLength(30);
+                    .IsRequired()
+                    .HasMaxLength(30);
+
+                // New: connect project to Identity user
+                entity.Property(p => p.OwnerUserId)
+                    .IsRequired()
+                    .HasMaxLength(450);
+
+                entity.HasIndex(p => p.OwnerUserId);
             });
 
             // Tasks table
@@ -59,31 +67,32 @@ namespace Atlas_TaskFlow_App.Data
                 entity.HasKey(t => t.TaskId);
 
                 entity.Property(t => t.TaskId)
-                      .ValueGeneratedOnAdd();
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(t => t.Title)
-                      .IsRequired()
-                      .HasMaxLength(200);
+                    .IsRequired()
+                    .HasMaxLength(200);
 
                 entity.Property(t => t.Description)
-                      .HasMaxLength(1000);
+                    .HasMaxLength(1000);
 
                 entity.Property(t => t.DueDate)
-                      .HasColumnType("date");
+                    .HasColumnType("date");
 
                 entity.Property(t => t.Priority)
-                      .IsRequired()
-                      .HasMaxLength(20);
+                    .IsRequired()
+                    .HasMaxLength(20);
 
                 entity.Property(t => t.Status)
-                      .IsRequired()
-                      .HasMaxLength(30);
+                    .IsRequired()
+                    .HasMaxLength(30);
 
+                // Every task belongs to a project
                 entity.HasOne(t => t.Project)
-                      .WithMany(p => p.Tasks)
-                      .HasForeignKey(t => t.ProjectId)
-                      .IsRequired()
-                      .OnDelete(DeleteBehavior.NoAction);
+                    .WithMany(p => p.Tasks)
+                    .HasForeignKey(t => t.ProjectId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.NoAction);
             });
         }
     }

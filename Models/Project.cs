@@ -1,4 +1,7 @@
 ﻿
+// App #1 - Atlas TaskFlow
+// Project Model - Project Owner
+
 using System;
 using System.Collections.Generic;
 
@@ -18,6 +21,11 @@ namespace Atlas_TaskFlow_App.Models
 
         public string Status { get; set; } = "";
 
-        public ICollection<TaskItem> Tasks { get; set; }= new List<TaskItem>();
+        // ASP.NET Core Identity user who owns this project
+        public string OwnerUserId { get; set; } = "";
+
+        // Tasks that belong to this project
+        public ICollection<TaskItem> Tasks { get; set; }
+            = new List<TaskItem>();
     }
 }

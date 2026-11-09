@@ -1,0 +1,72 @@
+﻿
+@* App #1 - Atlas TaskFlow - Admin Dashboard *@
+@* Only Admin users can open this page *@
+
+@model List<Microsoft.AspNetCore.Identity.IdentityUser>
+
+@{
+    Layout = "_AppLayout";
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div style="padding:24px;">
+
+    <h1>Admin Dashboard</h1>
+
+    <p>
+        Welcome to the Atlas TaskFlow administration area.
+    </p>
+
+    <div style="background:white;
+                border:1px solid #e2e8f0;
+                border-radius:10px;
+                padding:20px;
+                margin-top:20px;">
+
+        <h2>Registered Users</h2>
+
+        <p>
+            Total users: <strong>@Model.Count</strong>
+        </p>
+
+        <div style="overflow-x:auto;">
+
+            <table style="width:100%;
+                          border-collapse:collapse;">
+
+                <thead>
+                    <tr style="text-align:left;">
+                        <th style="padding:12px;">Email</th>
+                        <th style="padding:12px;">Email Confirmed</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var user in Model)
+                    {
+                        <tr style="border-top:1px solid #e2e8f0;">
+                            <td style="padding:12px;">
+                                @user.Email
+                            </td>
+
+                            <td style="padding:12px;">
+                                @(user.EmailConfirmed ? "Yes" : "No")
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <p style="margin-top:20px;color:#64748b;">
+        This page is available to Admin users only.
+        User management actions will be added later.
+    </p>
+
+</div>

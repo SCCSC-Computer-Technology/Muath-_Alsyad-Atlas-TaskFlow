@@ -1,7 +1,8 @@
 
-// App #1 - Atlas TaskFlow - Home Controller
-// Login with ASP.NET Core Identity
+// App #1 - Atlas TaskFlow
+// Home Controller - Login and Member Role
 
+using System;
 using System.Diagnostics;
 using Atlas_TaskFlow_App.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,10 @@ namespace Atlas_TaskFlow_App.Controllers
             _userManager = userManager;
         }
 
-        // Show the beautiful Atlas Login page
+        // =====================================
+        // 1. SHOW ATLAS LOGIN
+        // =====================================
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Index()
@@ -36,7 +40,10 @@ namespace Atlas_TaskFlow_App.Controllers
             return View();
         }
 
-        // Check email and password with ASP.NET Core Identity
+        // =====================================
+        // 2. CHECK LOGIN
+        // =====================================
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -56,8 +63,10 @@ namespace Atlas_TaskFlow_App.Controllers
                 return View("Index");
             }
 
-            // Find the account in the Identity database
-            var user = await _userManager.FindByEmailAsync(email.Trim());
+            // Find user in AspNetUsers
+            var user = await _userManager.FindByEmailAsync(
+                email.Trim()
+            );
 
             if (user == null)
             {
@@ -67,7 +76,7 @@ namespace Atlas_TaskFlow_App.Controllers
                 return View("Index");
             }
 
-            // Identity verifies the password and account status
+            // Verify password using Identity
             var result = await _signInManager.PasswordSignInAsync(
                 user,
                 password,
@@ -77,6 +86,31 @@ namespace Atlas_TaskFlow_App.Controllers
 
             if (result.Succeeded)
             {
+                // New users without roles become Members
+                var userRoles =
+                    await _userManager.GetRolesAsync(user);
+
+                if (userRoles.Count == 0)
+                {
+                    var roleResult =
+                        await _userManager.AddToRoleAsync(
+                            user, "Member"
+                        );
+
+                    if (!roleResult.Succeeded)
+                    {
+                        await _signInManager.SignOutAsync();
+
+                        ViewData["LoginError"] =
+                            "Could not set up your account role.";
+
+                        return View("Index");
+                    }
+
+                    // Update the cookie with the new role
+                    await _signInManager.RefreshSignInAsync(user);
+                }
+
                 return RedirectToAction("Index", "Dashboard");
             }
 
@@ -101,16 +135,37 @@ namespace Atlas_TaskFlow_App.Controllers
                     "Invalid email or password.";
             }
 
-            // Stay on our beautiful Login page after an error
             return View("Index");
         }
+
+        // =====================================
+        // 3. ACCESS DENIED
+        // =====================================
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return Content(
+                "Access Denied. You need Admin permission to open this page."
+            );
+        }
+
+        // =====================================
+        // 4. PRIVACY PAGE
+        // =====================================
 
         public IActionResult Privacy()
         {
             return View();
         }
 
-        [ResponseCache(Duration = 0,
+        // =====================================
+        // 5. ERROR PAGE
+        // =====================================
+
+        [ResponseCache(
+            Duration = 0,
             Location = ResponseCacheLocation.None,
             NoStore = true)]
         public IActionResult Error()

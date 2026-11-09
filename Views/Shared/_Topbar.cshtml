@@ -1,4 +1,17 @@
 ﻿
+@* App #1 - Atlas TaskFlow - Topbar *@
+@* Current user and Identity Logout *@
+
+@{
+    // Get the name of the signed-in user.
+    string userName = User.Identity?.Name ?? "Atlas User";
+
+    // Use the first two letters for the avatar.
+    string avatar = userName.Length >= 2
+        ? userName.Substring(0, 2).ToUpperInvariant()
+        : "AT";
+}
+
 <header class="app-topbar">
 
     <!-- Search -->
@@ -18,9 +31,10 @@
     <!-- Right Actions -->
     <div class="topbar-actions">
 
+        <!-- Notifications -->
         <span class="notification-icon"
-              title="Notifications coming later"
-              aria-label="Notifications preview">
+              title="Notifications"
+              aria-label="Notifications">
 
             <svg class="icon" aria-hidden="true">
                 <use href="#i-bell"></use>
@@ -30,18 +44,41 @@
 
         </span>
 
+        <!-- Logged-in user -->
         <div class="user-profile">
 
             <div class="profile-avatar">
-                AS
+                @avatar
             </div>
 
             <div class="profile-info">
-                <strong>Alex Student</strong>
-                <span>Student</span>
+                <strong>@userName</strong>
+                <span>Signed in</span>
             </div>
 
         </div>
+
+        <!-- Logout using ASP.NET Core Identity -->
+        <form method="post"
+              asp-area="Identity"
+              asp-page="/Account/Logout"
+              asp-route-returnUrl="/">
+
+            @Html.AntiForgeryToken()
+
+            <button type="submit"
+                    title="Sign out of Atlas TaskFlow"
+                    style="padding:8px 12px;
+                           border:1px solid #d6dfed;
+                           border-radius:8px;
+                           background:white;
+                           color:#334155;
+                           font-weight:600;
+                           cursor:pointer;">
+                Log Out
+            </button>
+
+        </form>
 
     </div>
 

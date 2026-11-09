@@ -1,43 +1,35 @@
 
 // App #1 - Atlas TaskFlow
-// Program.cs - Complete Application Configuration
-// ASP.NET Core MVC + SQL Server + Identity
-// Database First
+// Program.cs - Identity + Protected MVC Pages
+// ASP.NET Core MVC + SQL Server - Database First
 
 using Atlas_TaskFlow_App.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// =====================================================
-// 1. MAIN ATLAS TASKFLOW DATABASE
-// =====================================================
-// Used for Projects and Tasks.
-// Connection: TaskFlowConnection
+// ==========================================
+// 1. TASKS AND PROJECTS DATABASE
+// ==========================================
 
 builder.Services.AddDbContext<TaskFlowDbContext>(
     options => options.UseSqlServer(
         builder.Configuration.GetConnectionString(
-            "TaskFlowConnection"
-        )
+            "TaskFlowConnection")
     )
 );
 
-
-// =====================================================
-// 2. ASP.NET CORE IDENTITY DATABASE
-// =====================================================
-// Used for Login, Register, and account management.
-// Connection: DefaultConnection
+// ==========================================
+// 2. IDENTITY DATABASE
+// ==========================================
 
 var connectionString =
     builder.Configuration.GetConnectionString(
-        "DefaultConnection"
-    )
+        "DefaultConnection")
     ?? throw new InvalidOperationException(
-        "Connection string 'DefaultConnection' not found."
+        "DefaultConnection was not found."
     );
 
 builder.Services.AddDbContext<ApplicationDbContext>(
@@ -46,6 +38,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+// Use the original ASP.NET Core Identity.
 builder.Services
     .AddDefaultIdentity<IdentityUser>(
         options =>
@@ -53,72 +46,75 @@ builder.Services
     )
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Send unauthenticated users to our Atlas Login page.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/";
+});
 
-// =====================================================
-// 3. ASP.NET CORE MVC AND RAZOR PAGES
-// =====================================================
+// ==========================================
+// 3. MVC AND RAZOR PAGES
+// ==========================================
 
 builder.Services.AddControllersWithViews();
-
-// Required for Razor Pages, including Identity UI.
 builder.Services.AddRazorPages();
 
+// ==========================================
+// 4. PROTECT APPLICATION PAGES
+// ==========================================
 
-// =====================================================
-// 4. TEAM DATABASE
-// =====================================================
-// Used for TeamMembers and TaskAssignments.
-// Connection: TaskFlowConnection
+// Every page requires login unless it has
+// [AllowAnonymous] or AllowAnonymous().
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy =
+        new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+});
+
+// ==========================================
+// 5. TEAM DATABASE
+// ==========================================
 
 builder.Services.AddDbContext<TeamDataContext>(
     options => options.UseSqlServer(
         builder.Configuration.GetConnectionString(
-            "TaskFlowConnection"
-        )
+            "TaskFlowConnection")
     )
 );
 
-
-// =====================================================
-// 5. NOTIFICATIONS DATABASE
-// =====================================================
-// Used for saving notifications and read status.
-// Connection: TaskFlowConnection
+// ==========================================
+// 6. NOTIFICATIONS DATABASE
+// ==========================================
 
 builder.Services.AddDbContext<NotificationDataContext>(
     options => options.UseSqlServer(
         builder.Configuration.GetConnectionString(
-            "TaskFlowConnection"
-        )
+            "TaskFlowConnection")
     )
 );
 
-
-// =====================================================
-// 6. USER SETTINGS DATABASE
-// =====================================================
-// Used for user profiles and preferences.
-// Connection: TaskFlowConnection
+// ==========================================
+// 7. USER SETTINGS DATABASE
+// ==========================================
 
 builder.Services.AddDbContext<UserSettingsDataContext>(
     options => options.UseSqlServer(
         builder.Configuration.GetConnectionString(
-            "TaskFlowConnection"
-        )
+            "TaskFlowConnection")
     )
 );
 
-
-// =====================================================
-// 7. BUILD APPLICATION
-// =====================================================
+// ==========================================
+// 8. BUILD THE APPLICATION
+// ==========================================
 
 var app = builder.Build();
 
-
-// =====================================================
-// 8. HTTP REQUEST PIPELINE
-// =====================================================
+// ==========================================
+// 9. REQUEST PIPELINE
+// ==========================================
 
 if (app.Environment.IsDevelopment())
 {
@@ -127,34 +123,26 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-
     app.UseHsts();
 }
 
-
-// Redirect HTTP to HTTPS.
 app.UseHttpsRedirection();
 
-
-// Enable routing.
 app.UseRouting();
 
-
-// Identify the logged-in user.
+// Check who the user is.
 app.UseAuthentication();
 
-
-// Check user authorization permissions.
+// Check whether the user is allowed.
 app.UseAuthorization();
 
+// CSS, JS and images must remain public.
+app.MapStaticAssets()
+   .AllowAnonymous();
 
-// Enable application static assets.
-app.MapStaticAssets();
-
-
-// =====================================================
-// 9. MVC ROUTING
-// =====================================================
+// ==========================================
+// 10. MVC ROUTING
+// ==========================================
 
 app.MapControllerRoute(
     name: "default",
@@ -162,17 +150,15 @@ app.MapControllerRoute(
 )
 .WithStaticAssets();
 
-
-// =====================================================
-// 10. IDENTITY RAZOR PAGES
-// =====================================================
+// ==========================================
+// 11. IDENTITY PAGES
+// ==========================================
 
 app.MapRazorPages()
    .WithStaticAssets();
 
-
-// =====================================================
-// 11. START APPLICATION
-// =====================================================
+// ==========================================
+// 12. START
+// ==========================================
 
 app.Run();

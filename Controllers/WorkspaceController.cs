@@ -1,17 +1,23 @@
 ﻿
-// App #1 - Atlas TaskFlow - Workspace Controller
+// App #1 - Atlas TaskFlow
+// Workspace Controller - User-Owned Team and Calendar
+// ASP.NET Core MVC + SQL Server - Database First
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using Atlas_TaskFlow_App.Data;
 using Atlas_TaskFlow_App.Models;
 using Atlas_TaskFlow_App.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas_TaskFlow_App.Controllers
 {
+    [Authorize]
     public class WorkspaceController : Controller
     {
         private readonly TaskFlowDbContext _db;
@@ -25,8 +31,16 @@ namespace Atlas_TaskFlow_App.Controllers
             _team = team;
         }
 
+        // Get logged-in Identity user ID
+        private string CurrentUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? throw new InvalidOperationException(
+                    "Current user ID is missing.");
+        }
+
         // ==========================================
-        // TEAM TASKS - REAL DATABASE DATA
+        // 1. TEAM TASKS - GET
         // ==========================================
 
         [HttpGet]
@@ -37,38 +51,53 @@ namespace Atlas_TaskFlow_App.Controllers
             string? priority,
             string? status)
         {
-            // Read existing projects and tasks
+            string userId = CurrentUserId();
+
+            // Only my projects
             var projects = _db.Projects
                 .AsNoTracking()
+                .Where(p => p.OwnerUserId == userId)
                 .OrderBy(p => p.Name)
                 .ToList();
 
+            // Only tasks from my projects
             var tasks = _db.Tasks
                 .Include(t => t.Project)
                 .AsNoTracking()
+                .Where(t => t.Project != null &&
+                            t.Project.OwnerUserId == userId)
                 .OrderBy(t => t.DueDate)
                 .ToList();
 
-            // Read team records from SQL Server
+            // Only my team members
             var members = _team.TeamMembers
                 .AsNoTracking()
-                .Where(m => m.IsActive)
+                .Where(m => m.OwnerUserId == userId &&
+                            m.IsActive)
                 .OrderBy(m => m.FullName)
                 .ToList();
 
-            var assignments = _team.TaskAssignments
-                .AsNoTracking()
+            // Task IDs owned by this user
+            var taskIds = tasks
+                .Select(t => t.TaskId)
                 .ToList();
 
-            // Make lookups for each task assignment
+            // Only assignments involving my tasks
+            // and my own team members
+            var assignments = _team.TaskAssignments
+                .AsNoTracking()
+                .Where(a =>
+                    taskIds.Contains(a.TaskId) &&
+                    a.Member.OwnerUserId == userId)
+                .ToList();
+
             var assignmentsByTask = assignments
                 .ToDictionary(a => a.TaskId, a => a.MemberId);
 
             var membersById = members
                 .ToDictionary(m => m.MemberId);
 
-            var allRows = new System.Collections.Generic
-                .List<TeamTaskRowViewModel>();
+            var allRows = new List<TeamTaskRowViewModel>();
 
             foreach (var task in tasks)
             {
@@ -94,20 +123,17 @@ namespace Atlas_TaskFlow_App.Controllers
                     TaskId = task.TaskId,
                     Title = task.Title,
                     ProjectId = task.ProjectId,
-
-                    ProjectName =
-                        task.Project?.Name ?? "Unknown Project",
-
+                    ProjectName = task.Project?.Name
+                                  ?? "Unknown Project",
                     DueDate = task.DueDate,
                     Priority = task.Priority,
                     Status = task.Status,
-
                     MemberId = assignedMemberId,
                     AssigneeName = assignedName
                 });
             }
 
-            // Filter in memory for this initial team MVP
+            // Search and filters
             var filtered = allRows.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -117,12 +143,10 @@ namespace Atlas_TaskFlow_App.Controllers
                 filtered = filtered.Where(t =>
                     t.Title.Contains(
                         term,
-                        StringComparison.OrdinalIgnoreCase)
-                    ||
+                        StringComparison.OrdinalIgnoreCase) ||
                     t.ProjectName.Contains(
                         term,
-                        StringComparison.OrdinalIgnoreCase)
-                    ||
+                        StringComparison.OrdinalIgnoreCase) ||
                     t.AssigneeName.Contains(
                         term,
                         StringComparison.OrdinalIgnoreCase));
@@ -136,7 +160,6 @@ namespace Atlas_TaskFlow_App.Controllers
 
             if (memberId.HasValue)
             {
-                // MemberId = 0 means unassigned
                 filtered = memberId.Value == 0
                     ? filtered.Where(t => !t.MemberId.HasValue)
                     : filtered.Where(
@@ -181,14 +204,14 @@ namespace Atlas_TaskFlow_App.Controllers
                 Status = status ?? ""
             };
 
-            // Used by the shared Create Task modal
+            // Shared Create Task modal
             ViewBag.ProjectList = projects;
 
             return View(model);
         }
 
         // ==========================================
-        // ADD TEAM MEMBER
+        // 2. CREATE TEAM MEMBER - POST
         // ==========================================
 
         [HttpPost]
@@ -198,13 +221,16 @@ namespace Atlas_TaskFlow_App.Controllers
             string? email,
             string role = "Member")
         {
+            string userId = CurrentUserId();
+
             fullName = fullName?.Trim() ?? "";
+
             email = string.IsNullOrWhiteSpace(email)
                 ? null
                 : email.Trim().ToLowerInvariant();
 
-            // Validate name
-            if (fullName.Length < 2 || fullName.Length > 100)
+            if (fullName.Length < 2 ||
+                fullName.Length > 100)
             {
                 TempData["TeamError"] =
                     "Member name must contain 2 to 100 characters.";
@@ -212,7 +238,6 @@ namespace Atlas_TaskFlow_App.Controllers
                 return RedirectToAction(nameof(TeamTasks));
             }
 
-            // Validate optional email
             if (email != null &&
                 (email.Length > 256 ||
                  !new EmailAddressAttribute().IsValid(email)))
@@ -223,16 +248,19 @@ namespace Atlas_TaskFlow_App.Controllers
                 return RedirectToAction(nameof(TeamTasks));
             }
 
+            // Do not reveal another user's team records
             if (email != null &&
-                _team.TeamMembers.Any(m => m.Email == email))
+                _team.TeamMembers.Any(m =>
+                    m.OwnerUserId == userId &&
+                    m.Email == email))
             {
                 TempData["TeamError"] =
-                    "A team member with this email already exists.";
+                    "This email is already in your team.";
 
                 return RedirectToAction(nameof(TeamTasks));
             }
 
-            // Roles are labels only, not access permissions
+            // Labels only, not Identity roles
             role = role == "Lead" ? "Lead" : "Member";
 
             var member = new TeamMember
@@ -240,7 +268,10 @@ namespace Atlas_TaskFlow_App.Controllers
                 FullName = fullName,
                 Email = email,
                 Role = role,
-                IsActive = true
+                IsActive = true,
+
+                // The owner comes from the server
+                OwnerUserId = userId
             };
 
             try
@@ -254,14 +285,14 @@ namespace Atlas_TaskFlow_App.Controllers
             catch (DbUpdateException)
             {
                 TempData["TeamError"] =
-                    "Could not add this member. Check the details.";
+                    "Could not add the member. Check the details.";
             }
 
             return RedirectToAction(nameof(TeamTasks));
         }
 
         // ==========================================
-        // ASSIGN OR UNASSIGN A TASK
+        // 3. ASSIGN OR UNASSIGN TASK - POST
         // ==========================================
 
         [HttpPost]
@@ -270,11 +301,15 @@ namespace Atlas_TaskFlow_App.Controllers
             int taskId,
             int memberId)
         {
-            // Confirm task exists
-            bool taskExists = _db.Tasks
-                .Any(t => t.TaskId == taskId);
+            string userId = CurrentUserId();
 
-            if (!taskExists)
+            // Confirm this task belongs to my project
+            bool ownsTask = _db.Tasks.Any(t =>
+                t.TaskId == taskId &&
+                t.Project != null &&
+                t.Project.OwnerUserId == userId);
+
+            if (!ownsTask)
             {
                 return NotFound();
             }
@@ -282,7 +317,7 @@ namespace Atlas_TaskFlow_App.Controllers
             var existingAssignment = _team.TaskAssignments
                 .SingleOrDefault(a => a.TaskId == taskId);
 
-            // MemberId = 0 removes the assignment
+            // MemberId = 0 means unassign
             if (memberId == 0)
             {
                 if (existingAssignment != null)
@@ -299,23 +334,19 @@ namespace Atlas_TaskFlow_App.Controllers
                 return RedirectToAction(nameof(TeamTasks));
             }
 
-            // Confirm member exists and is active
-            bool memberExists = _team.TeamMembers
-                .Any(m =>
-                    m.MemberId == memberId &&
-                    m.IsActive);
+            // The assigned member must belong to me too
+            bool ownsMember = _team.TeamMembers.Any(m =>
+                m.MemberId == memberId &&
+                m.OwnerUserId == userId &&
+                m.IsActive);
 
-            if (!memberExists)
+            if (!ownsMember)
             {
-                TempData["TeamError"] =
-                    "Please select a valid team member.";
-
-                return RedirectToAction(nameof(TeamTasks));
+                return NotFound();
             }
 
             if (existingAssignment == null)
             {
-                // First assignment for this task
                 _team.TaskAssignments.Add(
                     new TaskAssignment
                     {
@@ -325,7 +356,6 @@ namespace Atlas_TaskFlow_App.Controllers
             }
             else
             {
-                // Change the assigned member
                 existingAssignment.MemberId = memberId;
             }
 
@@ -346,20 +376,28 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // ==========================================
-        // CALENDAR - PREVIOUS WORKING FEATURE
+        // 4. CALENDAR - GET
         // ==========================================
 
         [HttpGet]
         public IActionResult Calendar()
         {
+            string userId = CurrentUserId();
+
+            // Only my scheduled tasks
             var tasks = _db.Tasks
                 .Include(t => t.Project)
                 .AsNoTracking()
-                .Where(t => t.DueDate != null)
+                .Where(t =>
+                    t.Project != null &&
+                    t.Project.OwnerUserId == userId &&
+                    t.DueDate != null)
                 .OrderBy(t => t.DueDate)
                 .ToList();
 
+            // Only my projects in the modal and filters
             ViewBag.ProjectList = _db.Projects
+                .Where(p => p.OwnerUserId == userId)
                 .OrderBy(p => p.Name)
                 .ToList();
 
@@ -367,25 +405,32 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // ==========================================
-        // REMAINING UI PREVIEW PAGES
+        // 5. NOTIFICATIONS REDIRECT
         // ==========================================
-
 
         [HttpGet]
         public IActionResult Notifications()
         {
-            return RedirectToAction("Index", "Notifications");
+            return RedirectToAction(
+                "Index",
+                "Notifications");
         }
 
+        // ==========================================
+        // 6. SETTINGS REDIRECT
+        // ==========================================
 
-
-        // Redirect the old Settings URL to the real Settings controller
         [HttpGet]
         public IActionResult Settings()
         {
-            return RedirectToAction("Index", "Settings");
+            return RedirectToAction(
+                "Index",
+                "Settings");
         }
 
+        // ==========================================
+        // 7. HELP PAGE
+        // ==========================================
 
         [HttpGet]
         public IActionResult Help()

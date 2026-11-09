@@ -1,17 +1,21 @@
 ﻿
 // App #1 - Atlas TaskFlow
-// Phase: Persistent Notifications Backend
+// Notifications Controller - User-Owned Notifications
+// ASP.NET Core MVC + SQL Server - Database First
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using Atlas_TaskFlow_App.Data;
 using Atlas_TaskFlow_App.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas_TaskFlow_App.Controllers
 {
+    [Authorize]
     public class NotificationsController : Controller
     {
         private readonly TaskFlowDbContext _taskDb;
@@ -29,45 +33,72 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =========================================
-        // 1. SHOW NOTIFICATIONS
+        // CURRENT LOGGED-IN USER
+        // =========================================
+
+        private string CurrentUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? throw new InvalidOperationException(
+                    "Current user ID is missing.");
+        }
+
+        // =========================================
+        // FIND MY TASK IDs
+        // =========================================
+
+        private int[] MyTaskIds(string userId)
+        {
+            return _taskDb.Tasks
+                .AsNoTracking()
+                .Where(t => t.Project != null &&
+                            t.Project.OwnerUserId == userId)
+                .Select(t => t.TaskId)
+                .ToArray();
+        }
+
+        // =========================================
+        // 1. SHOW MY NOTIFICATIONS
         // =========================================
 
         [HttpGet]
         public IActionResult Index(string? filter)
         {
-            // For this MVP, discover new notifications
-            // from the current SQL Server records.
-            SyncNotifications();
+            string userId = CurrentUserId();
+            int[] myTaskIds = MyTaskIds(userId);
+
+            // Create notifications for this user's tasks
+            SyncNotifications(userId, myTaskIds);
 
             filter = NormalizeFilter(filter);
 
-            var query = _notificationDb.Notifications
+            // Only notifications linked to my tasks
+            var myNotifications = _notificationDb.Notifications
                 .AsNoTracking()
-                .AsQueryable();
+                .Where(n =>
+                    n.TaskId.HasValue &&
+                    myTaskIds.Contains(n.TaskId.Value));
 
-            // Statistics from the actual database
-            ViewBag.TotalCount =
-                _notificationDb.Notifications.Count();
+            // User-specific statistics
+            ViewBag.TotalCount = myNotifications.Count();
 
-            ViewBag.UnreadCount =
-                _notificationDb.Notifications.Count(
-                    n => !n.IsRead);
+            ViewBag.UnreadCount = myNotifications
+                .Count(n => !n.IsRead);
 
-            ViewBag.DeadlineCount =
-                _notificationDb.Notifications.Count(
-                    n => n.Type == "deadline");
+            ViewBag.DeadlineCount = myNotifications
+                .Count(n => n.Type == "deadline");
 
-            ViewBag.AssignmentCount =
-                _notificationDb.Notifications.Count(
-                    n => n.Type == "assignment");
+            ViewBag.AssignmentCount = myNotifications
+                .Count(n => n.Type == "assignment");
 
-            ViewBag.CompletedCount =
-                _notificationDb.Notifications.Count(
-                    n => n.Type == "completed");
+            ViewBag.CompletedCount = myNotifications
+                .Count(n => n.Type == "completed");
 
             ViewBag.Filter = filter;
 
-            // Apply selected filter
+            // Filter only the user's notifications
+            var query = myNotifications;
+
             if (filter == "unread")
             {
                 query = query.Where(n => !n.IsRead);
@@ -90,7 +121,7 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =========================================
-        // 2. MARK ONE NOTIFICATION READ / UNREAD
+        // 2. MARK MY NOTIFICATION READ / UNREAD
         // =========================================
 
         [HttpPost]
@@ -100,8 +131,15 @@ namespace Atlas_TaskFlow_App.Controllers
             bool isRead,
             string? filter)
         {
-            var notification =
-                _notificationDb.Notifications.Find(id);
+            string userId = CurrentUserId();
+            int[] myTaskIds = MyTaskIds(userId);
+
+            // Must belong to a task I own
+            var notification = _notificationDb.Notifications
+                .FirstOrDefault(n =>
+                    n.NotificationId == id &&
+                    n.TaskId.HasValue &&
+                    myTaskIds.Contains(n.TaskId.Value));
 
             if (notification == null)
             {
@@ -123,17 +161,23 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =========================================
-        // 3. MARK ALL NOTIFICATIONS AS READ
+        // 3. MARK ALL MY NOTIFICATIONS AS READ
         // =========================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult MarkAllRead()
         {
-            var unread =
-                _notificationDb.Notifications
-                    .Where(n => !n.IsRead)
-                    .ToList();
+            string userId = CurrentUserId();
+            int[] myTaskIds = MyTaskIds(userId);
+
+            // Never change another user's notifications
+            var unread = _notificationDb.Notifications
+                .Where(n =>
+                    !n.IsRead &&
+                    n.TaskId.HasValue &&
+                    myTaskIds.Contains(n.TaskId.Value))
+                .ToList();
 
             if (unread.Count > 0)
             {
@@ -152,25 +196,35 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =========================================
-        // 4. SYNCHRONIZE DATABASE-DERIVED ALERTS
+        // 4. GENERATE NOTIFICATIONS FOR MY TASKS
         // =========================================
 
-        private void SyncNotifications()
+        private void SyncNotifications(
+            string userId,
+            int[] myTaskIds)
         {
-            // These are real tasks from dbo.Tasks.
+            // Retrieve only this user's tasks
             var tasks = _taskDb.Tasks
                 .AsNoTracking()
+                .Where(t => myTaskIds.Contains(t.TaskId))
                 .ToList();
 
-            // These are real assignments and members.
+            // Assignments must have both an owned task
+            // and an owned team member
             var assignments = _teamDb.TaskAssignments
                 .Include(a => a.Member)
                 .AsNoTracking()
+                .Where(a =>
+                    myTaskIds.Contains(a.TaskId) &&
+                    a.Member.OwnerUserId == userId)
                 .ToList();
 
-            // Existing keys prevent repeat notifications.
+            // Existing event keys prevent duplicates
             var knownKeys = _notificationDb.Notifications
                 .AsNoTracking()
+                .Where(n =>
+                    n.TaskId.HasValue &&
+                    myTaskIds.Contains(n.TaskId.Value))
                 .Select(n => n.EventKey)
                 .ToHashSet();
 
@@ -180,14 +234,10 @@ namespace Atlas_TaskFlow_App.Controllers
             );
 
             DateTime today = DateTime.Today;
+            DateTime oldestDeadline = today.AddDays(-30);
+            DateTime latestDeadline = today.AddDays(7);
 
-            DateTime oldestDeadline =
-                today.AddDays(-30);
-
-            DateTime latestDeadline =
-                today.AddDays(7);
-
-            // A. Task deadlines and completed tasks
+            // A. Completed tasks and deadlines
             foreach (var task in tasks)
             {
                 bool isCompleted =
@@ -206,14 +256,12 @@ namespace Atlas_TaskFlow_App.Controllers
                     );
                 }
 
-                // Deadline alerts for non-completed tasks
                 if (isCompleted || !task.DueDate.HasValue)
                 {
                     continue;
                 }
 
-                DateTime dueDate =
-                    task.DueDate.Value.Date;
+                DateTime dueDate = task.DueDate.Value.Date;
 
                 if (dueDate < oldestDeadline ||
                     dueDate > latestDeadline)
@@ -250,7 +298,7 @@ namespace Atlas_TaskFlow_App.Controllers
                 );
             }
 
-            // B. Task assignments
+            // B. Assignment notifications
             foreach (var assignment in assignments)
             {
                 if (!taskTitles.TryGetValue(
@@ -281,7 +329,6 @@ namespace Atlas_TaskFlow_App.Controllers
                 );
             }
 
-            // Persist newly discovered notifications
             if (_notificationDb.ChangeTracker.HasChanges())
             {
                 _notificationDb.SaveChanges();
@@ -289,7 +336,7 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =========================================
-        // 5. ADD NOTIFICATION ONLY IF NOT EXISTS
+        // 5. ADD NOTIFICATION
         // =========================================
 
         private void AddNewNotification(
@@ -298,14 +345,14 @@ namespace Atlas_TaskFlow_App.Controllers
             string type,
             string title,
             string message,
-            int? taskId)
+            int taskId)
         {
+            // Avoid duplicate events
             if (!knownKeys.Add(eventKey))
             {
                 return;
             }
 
-            // Respect SQL column lengths
             if (message.Length > 500)
             {
                 message = message.Substring(0, 500);
@@ -317,17 +364,18 @@ namespace Atlas_TaskFlow_App.Controllers
                 Type = type,
                 Title = title,
                 Message = message,
+
+                // Linked to an owned Task
                 TaskId = taskId,
+
                 IsRead = false
             };
 
-            _notificationDb.Notifications.Add(
-                notification
-            );
+            _notificationDb.Notifications.Add(notification);
         }
 
         // =========================================
-        // 6. ALLOWED FILTERS
+        // 6. ALLOWED FILTER VALUES
         // =========================================
 
         private static string NormalizeFilter(

@@ -1,5 +1,6 @@
 ﻿
-// App #1 - Atlas TaskFlow - Team Data Context
+// App #1 - Atlas TaskFlow
+// Team Data Context - Database First
 
 using Atlas_TaskFlow_App.Models;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,7 @@ namespace Atlas_TaskFlow_App.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // TeamMembers table
+            // TeamMembers SQL table
             modelBuilder.Entity<TeamMember>(entity =>
             {
                 entity.ToTable("TeamMembers", "dbo");
@@ -42,6 +43,7 @@ namespace Atlas_TaskFlow_App.Data
                 entity.Property(m => m.Email)
                     .HasMaxLength(256);
 
+                // Preserve the original database index
                 entity.HasIndex(m => m.Email)
                     .IsUnique()
                     .HasFilter("[Email] IS NOT NULL");
@@ -56,14 +58,21 @@ namespace Atlas_TaskFlow_App.Data
 
                 entity.Property(m => m.CreatedAt)
                     .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                // New: Identity ownership
+                entity.Property(m => m.OwnerUserId)
+                    .HasMaxLength(450)
+                    .IsRequired();
+
+                entity.HasIndex(m => m.OwnerUserId);
             });
 
-            // TaskAssignments table
+            // TaskAssignments SQL table
             modelBuilder.Entity<TaskAssignment>(entity =>
             {
                 entity.ToTable("TaskAssignments", "dbo");
 
-                // One assignment per task
+                // Only one assignment per task
                 entity.HasKey(a => a.TaskId);
 
                 entity.Property(a => a.AssignedAt)
@@ -74,8 +83,7 @@ namespace Atlas_TaskFlow_App.Data
                     .HasForeignKey(a => a.MemberId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // SQL Server already has the FK to dbo.Tasks.
-                // The Tasks entity is managed by TaskFlowDbContext.
+                // TaskId is linked to dbo.Tasks in SQL.
             });
         }
     }

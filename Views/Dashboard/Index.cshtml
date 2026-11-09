@@ -1,62 +1,133 @@
-﻿@model List<Atlas_TaskFlow_App.Models.TaskItem>
+﻿
+@* App #1 - Atlas TaskFlow - Dashboard *@
+@* Real user data - ASP.NET Core MVC + SQL Server *@
+
+@model List<Atlas_TaskFlow_App.Models.TaskItem>
+
 @{
     Layout = "_AppLayout";
     ViewData["Title"] = "Dashboard";
 
+    // Current signed-in Identity user
+    string userName = User.Identity?.Name ?? "User";
+
+    // Current date and week
     DateTime today = DateTime.Today;
 
-    int daysSinceMonday =
-        ((int)today.DayOfWeek + 6) % 7;
-
+    int daysSinceMonday = ((int)today.DayOfWeek + 6) % 7;
     DateTime monday = today.AddDays(-daysSinceMonday);
-
     DateTime nextMonday = monday.AddDays(7);
+
+    // Statistics from the current user's tasks
+    int totalTasks = Model.Count;
+
+    int overdueTasks = Model.Count(t =>
+        t.DueDate.HasValue &&
+        t.DueDate.Value.Date < today &&
+        t.Status != "Completed");
+
+    int dueThisWeek = Model.Count(t =>
+        t.DueDate >= monday &&
+        t.DueDate < nextMonday &&
+        t.Status != "Completed");
+
+    int completedTasks = Model.Count(t =>
+        t.Status == "Completed");
+
+    // These projects are filtered by DashboardController
+    var projects = ViewBag.ProjectList as
+        List<Atlas_TaskFlow_App.Models.Project>
+        ?? new List<Atlas_TaskFlow_App.Models.Project>();
+
+    int activeProjects = ViewBag.ActiveProjects == null
+        ? 0
+        : (int)ViewBag.ActiveProjects;
+
+    // Only unfinished upcoming tasks
+    var upcomingTasks = Model
+        .Where(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date >= today &&
+            t.Status != "Completed")
+        .OrderBy(t => t.DueDate)
+        .Take(8)
+        .ToList();
+
+    // Calendar for the current month
+    DateTime firstDay = new DateTime(today.Year, today.Month, 1);
+    int daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
+    int firstWeekday = (int)firstDay.DayOfWeek;
+    int calendarCells = ((firstWeekday + daysInMonth + 6) / 7) * 7;
+
+    // Real task deadlines for calendar markers
+    var taskDates = Model
+        .Where(t => t.DueDate.HasValue)
+        .Select(t => t.DueDate!.Value.Date)
+        .ToHashSet();
 }
 
 @section Styles {
     <link rel="stylesheet"
-          href="@Url.Content("~/css/dashboard.css")">
+          href="@Url.Content("~/css/dashboard.css")" />
 }
 
 <div class="dashboard-page">
 
-    <!-- PAGE HEADER -->
+    <!-- DASHBOARD HEADER -->
     <div class="dashboard-heading">
 
         <div class="heading-text">
-            <h1>Welcome back, Alex!</h1>
+
+            <h1>Welcome back, @userName!</h1>
 
             <p>
-                Here's an overview of your tasks
-                and team progress.
+                Here's an overview of your tasks and projects.
             </p>
+
         </div>
 
-        <!-- Interactive UI preview -->
-        <!-- Open Create Task Modal -->
         <div class="new-task-menu">
 
-            <button type="button"
-                    class="new-task-button"
-                    onclick="document.getElementById('createTaskDialog').showModal()">
+            @if (projects.Count > 0)
+            {
+                <!-- Open the existing Create Task Modal -->
+                <button type="button"
+                        class="new-task-button"
+                        onclick="document.getElementById('createTaskDialog').showModal()">
 
-                <svg class="icon" aria-hidden="true">
-                    <use href="#i-plus"></use>
-                </svg>
+                    <svg class="icon" aria-hidden="true">
+                        <use href="#i-plus"></use>
+                    </svg>
 
-                <span>New Task</span>
+                    <span>New Task</span>
 
-            </button>
+                </button>
+            }
+            else
+            {
+                <!-- A new user must create a project first -->
+                <a class="new-task-button"
+                   style="text-decoration:none;"
+                   href="@Url.Action("Create", "Projects")">
+
+                    <svg class="icon" aria-hidden="true">
+                        <use href="#i-plus"></use>
+                    </svg>
+
+                    <span>New Project</span>
+
+                </a>
+            }
 
         </div>
-
 
     </div>
 
-    <!-- STATISTICS CARDS -->
+    <!-- REAL STATISTICS -->
     <section class="stats-grid"
              aria-label="Task statistics">
 
+        <!-- TOTAL TASKS -->
         <article class="stat-card">
 
             <div class="stat-icon stat-blue">
@@ -66,16 +137,19 @@
             </div>
 
             <div class="stat-information">
+
                 <div class="stat-title">
-                    <strong>@Model.Count</strong>
+                    <strong>@totalTasks</strong>
                     <span>Total Tasks</span>
                 </div>
 
-                <p>3 due this week</p>
+                <p>@dueThisWeek due this week</p>
+
             </div>
 
         </article>
 
+        <!-- OVERDUE -->
         <article class="stat-card">
 
             <div class="stat-icon stat-red">
@@ -85,21 +159,23 @@
             </div>
 
             <div class="stat-information">
-                <div class="stat-title">
-                    <strong>
-                        @(Model.Count(t =>
-                            t.DueDate < DateTime.Today &&
-                            t.Status != "Completed"))
-                    </strong>
 
+                <div class="stat-title">
+                    <strong>@overdueTasks</strong>
                     <span>Overdue</span>
                 </div>
 
-                <p>Needs attention</p>
+                <p>
+                    @(overdueTasks > 0
+                        ? "Needs attention"
+                        : "No overdue tasks")
+                </p>
+
             </div>
 
         </article>
 
+        <!-- DUE THIS WEEK -->
         <article class="stat-card">
 
             <div class="stat-icon stat-orange">
@@ -109,22 +185,19 @@
             </div>
 
             <div class="stat-information">
-                <div class="stat-title">
-                    <strong>
-                        @(Model.Count(t =>
-                            t.DueDate >= monday &&
-                            t.DueDate < nextMonday &&
-                            t.Status != "Completed"))
-                    </strong>
 
+                <div class="stat-title">
+                    <strong>@dueThisWeek</strong>
                     <span>Due This Week</span>
                 </div>
 
-                <p>Across all projects</p>
+                <p>Your upcoming deadlines</p>
+
             </div>
 
         </article>
 
+        <!-- ACTIVE PROJECTS -->
         <article class="stat-card">
 
             <div class="stat-icon stat-green">
@@ -134,19 +207,21 @@
             </div>
 
             <div class="stat-information">
+
                 <div class="stat-title">
-                    <strong>@ViewBag.ActiveProjects</strong>
+                    <strong>@activeProjects</strong>
                     <span>Active Projects</span>
                 </div>
 
-                <p>Active</p>
+                <p>Your active projects</p>
+
             </div>
 
         </article>
 
     </section>
 
-    <!-- DASHBOARD TWO-COLUMN CONTENT -->
+    <!-- TWO COLUMN DASHBOARD -->
     <div class="dashboard-columns">
 
         <!-- LEFT COLUMN -->
@@ -159,13 +234,16 @@
 
                     <h2>My Upcoming Tasks</h2>
 
-                    <span class="panel-link"
-                          title="Tasks page coming later">
+                    <a class="panel-link"
+                       href="@Url.Action("Index", "Tasks")">
+
                         View All
+
                         <svg class="icon" aria-hidden="true">
                             <use href="#i-arrow"></use>
                         </svg>
-                    </span>
+
+                    </a>
 
                 </div>
 
@@ -186,31 +264,58 @@
 
                         <tbody>
 
-                            @foreach (var task in Model)
+                            @if (upcomingTasks.Count == 0)
                             {
                                 <tr>
-                                    <td></td>
+                                    <td colspan="6"
+                                        style="text-align:center;
+                                               padding:22px;
+                                               color:#64748b;">
 
-                                    <td class="task-name">
-                                        @task.Title
-                                    </td>
+                                        No upcoming tasks.
 
-                                    <td>
-                                        @task.Project?.Name
-                                    </td>
+                                        <a href="@Url.Action("Index", "Tasks")">
+                                            View My Tasks
+                                        </a>
 
-                                    <td>
-                                        @task.DueDate?.ToString("MMM dd, yyyy")
-                                    </td>
-
-                                    <td>
-                                        @task.Priority
-                                    </td>
-
-                                    <td>
-                                        @task.Status
                                     </td>
                                 </tr>
+                            }
+                            else
+                            {
+                                @foreach (var task in upcomingTasks)
+                                {
+                                    <tr>
+
+                                        <td></td>
+
+                                        <td class="task-name">
+
+                                            <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })"
+                                               style="color:inherit;text-decoration:none;">
+                                                @task.Title
+                                            </a>
+
+                                        </td>
+
+                                        <td>
+                                            @(task.Project?.Name ?? "Unknown")
+                                        </td>
+
+                                        <td>
+                                            @task.DueDate?.ToString("MMM dd, yyyy")
+                                        </td>
+
+                                        <td>
+                                            @task.Priority
+                                        </td>
+
+                                        <td>
+                                            @task.Status
+                                        </td>
+
+                                    </tr>
+                                }
                             }
 
                         </tbody>
@@ -225,95 +330,25 @@
             <section class="dashboard-panel activity-panel">
 
                 <div class="panel-heading">
-
                     <h2>Recent Activity</h2>
-
-                    <span class="panel-link"
-                          title="Activity page coming later">
-                        View All
-                        <svg class="icon" aria-hidden="true">
-                            <use href="#i-arrow"></use>
-                        </svg>
-                    </span>
-
                 </div>
 
                 <div class="activity-list">
 
                     <div class="activity-item">
-                        <span class="activity-icon activity-green">
+
+                        <span class="activity-icon activity-blue">
                             <svg class="icon" aria-hidden="true">
                                 <use href="#i-check-circle"></use>
                             </svg>
                         </span>
 
                         <p>
-                            Taylor added a new task
-                            <strong>"Design homepage"</strong>
+                            Activity history is not available yet.
+                            Your current tasks and projects are
+                            displayed using your real SQL Server data.
                         </p>
 
-                        <time>2 hours ago</time>
-                    </div>
-
-                    <div class="activity-item">
-                        <span class="activity-icon activity-blue">
-                            <svg class="icon" aria-hidden="true">
-                                <use href="#i-message"></use>
-                            </svg>
-                        </span>
-
-                        <p>
-                            You commented on
-                            <strong>"Project proposal"</strong>
-                        </p>
-
-                        <time>4 hours ago</time>
-                    </div>
-
-                    <div class="activity-item">
-                        <span class="activity-icon activity-purple">
-                            <svg class="icon" aria-hidden="true">
-                                <use href="#i-user"></use>
-                            </svg>
-                        </span>
-
-                        <p>
-                            Jordan completed
-                            <strong>"User research interview"</strong>
-                        </p>
-
-                        <time>1 day ago</time>
-                    </div>
-
-                    <div class="activity-item">
-                        <span class="activity-icon activity-orange">
-                            <svg class="icon" aria-hidden="true">
-                                <use href="#i-file"></use>
-                            </svg>
-                        </span>
-
-                        <p>
-                            New file added to
-                            <strong>"UX Design"</strong>
-                        </p>
-
-                        <time>1 day ago</time>
-                    </div>
-
-                    <div class="activity-item">
-                        <span class="activity-icon activity-slate">
-                            <svg class="icon" aria-hidden="true">
-                                <use href="#i-refresh"></use>
-                            </svg>
-                        </span>
-
-                        <p>
-                            Project
-                            <strong>"Web Development"</strong>
-                            was updated
-                        </p>
-
-                        <time>2 days ago</time>
                     </div>
 
                 </div>
@@ -325,30 +360,34 @@
         <!-- RIGHT COLUMN -->
         <div class="dashboard-right">
 
-            <!-- CALENDAR -->
+            <!-- REAL CALENDAR PREVIEW -->
             <section class="dashboard-panel calendar-panel">
 
                 <div class="panel-heading">
 
                     <h2>Calendar Preview</h2>
 
-                    <span class="panel-link"
-                          title="Calendar page coming later">
+                    <a class="panel-link"
+                       href="@Url.Action("Calendar", "Workspace")">
                         View Full Calendar
-                    </span>
+                    </a>
 
                 </div>
 
                 <div class="calendar-month">
-                    <span aria-hidden="true">‹</span>
-                    <strong>October 2026</strong>
-                    <span aria-hidden="true">›</span>
+
+                    <span aria-hidden="true"></span>
+
+                    <strong>@today.ToString("MMMM yyyy")</strong>
+
+                    <span aria-hidden="true"></span>
+
                 </div>
 
                 <div class="calendar-grid"
-                     aria-label="October 2026 sample calendar">
+                     aria-label="Current month calendar">
 
-                    <!-- Weekday headings -->
+                    <!-- Weekday labels -->
                     <span class="weekday">Sun</span>
                     <span class="weekday">Mon</span>
                     <span class="weekday">Tue</span>
@@ -357,92 +396,112 @@
                     <span class="weekday">Fri</span>
                     <span class="weekday">Sat</span>
 
-                    <!-- September days -->
-                    <span class="calendar-day muted">27</span>
-                    <span class="calendar-day muted">28</span>
-                    <span class="calendar-day muted">29</span>
-                    <span class="calendar-day muted">30</span>
+                    <!-- Build calendar days -->
+                    @for (int i = 0; i < calendarCells; i++)
+                    {
+                        DateTime day = firstDay.AddDays(i - firstWeekday);
 
-                    <!-- October -->
-                    <span class="calendar-day">1</span>
-                    <span class="calendar-day">2</span>
-                    <span class="calendar-day">3</span>
+                        bool isCurrentMonth = day.Month == today.Month;
+                        bool isToday = day.Date == today;
+                        bool hasTask = taskDates.Contains(day.Date);
 
-                    <span class="calendar-day">4</span>
-                    <span class="calendar-day">5</span>
-                    <span class="calendar-day">6</span>
-                    <span class="calendar-day">7</span>
-                    <span class="calendar-day">8</span>
-                    <span class="calendar-day">9</span>
-                    <span class="calendar-day">10</span>
+                        string dayClass = "calendar-day";
 
-                    <span class="calendar-day">11</span>
-                    <span class="calendar-day">12</span>
-                    <span class="calendar-day">13</span>
-                    <span class="calendar-day">14</span>
-                    <span class="calendar-day">15</span>
-                    <span class="calendar-day">16</span>
-                    <span class="calendar-day">17</span>
+                        if (!isCurrentMonth)
+                        {
+                            dayClass += " muted";
+                        }
 
-                    <span class="calendar-day selected">18</span>
-                    <span class="calendar-day">19</span>
-                    <span class="calendar-day has-event">20</span>
-                    <span class="calendar-day">21</span>
-                    <span class="calendar-day has-event">22</span>
-                    <span class="calendar-day">23</span>
-                    <span class="calendar-day has-event">24</span>
+                        if (isToday)
+                        {
+                            dayClass += " selected";
+                        }
 
-                    <span class="calendar-day">25</span>
-                    <span class="calendar-day">26</span>
-                    <span class="calendar-day">27</span>
-                    <span class="calendar-day">28</span>
-                    <span class="calendar-day">29</span>
-                    <span class="calendar-day">30</span>
-                    <span class="calendar-day">31</span>
+                        if (hasTask)
+                        {
+                            dayClass += " has-event";
+                        }
+
+                        <span class="@dayClass"
+                              title="@(hasTask ? "Task deadline: " + day.ToString("MMM dd, yyyy") : day.ToString("MMM dd, yyyy"))">
+                            @day.Day
+                        </span>
+                    }
 
                 </div>
 
             </section>
 
-            <!-- TEAM PROGRESS -->
+            <!-- REAL PROJECT PROGRESS -->
             <section class="dashboard-panel progress-panel">
 
                 <div class="panel-heading">
 
-                    <h2>Team Progress</h2>
+                    <h2>Project Progress</h2>
 
-                    <span class="panel-link"
-                          title="Projects page coming later">
+                    <a class="panel-link"
+                       href="@Url.Action("Index", "Projects")">
                         View All Projects
-                    </span>
+                    </a>
 
                 </div>
 
-                <div class="progress-item">
+                @if (projects.Count == 0)
+                {
+                    <div style="padding:20px 13px;
+                                color:#64748b;
+                                font-size:12px;">
 
-                    <div class="progress-label">
-                        <strong>Web Development</strong>
-                        <span>4 of 4 tasks completed</span>
+                        No projects yet.
+
+                        <a href="@Url.Action("Create", "Projects")">
+                            Create your first project
+                        </a>
+
                     </div>
+                }
+                else
+                {
+                    @foreach (var project in projects.Take(4))
+                    {
+                        // Tasks in this project
+                        int projectTaskCount = Model.Count(t =>
+                            t.ProjectId == project.ProjectId);
 
-                    <div class="progress-track">
-                        <div class="progress-fill full"></div>
-                    </div>
+                        // Completed tasks in this project
+                        int projectCompleted = Model.Count(t =>
+                            t.ProjectId == project.ProjectId &&
+                            t.Status == "Completed");
 
-                </div>
+                        // Completion percentage
+                        int percentage = projectTaskCount == 0
+                            ? 0
+                            : (int)Math.Round(
+                                projectCompleted * 100.0 / projectTaskCount);
 
-                <div class="progress-item">
+                        <div class="progress-item">
 
-                    <div class="progress-label">
-                        <strong>UX Design</strong>
-                        <span>2 of 6 tasks completed</span>
-                    </div>
+                            <div class="progress-label">
 
-                    <div class="progress-track">
-                        <div class="progress-fill third"></div>
-                    </div>
+                                <strong>@project.Name</strong>
 
-                </div>
+                                <span>
+                                    @projectCompleted of @projectTaskCount tasks completed
+                                </span>
+
+                            </div>
+
+                            <div class="progress-track">
+
+                                <div class="progress-fill"
+                                     style="width:@(percentage)%;">
+                                </div>
+
+                            </div>
+
+                        </div>
+                    }
+                }
 
             </section>
 
@@ -451,8 +510,8 @@
     </div>
 
     <p class="dashboard-demo-note">
-        UI Demo — sample information,
-        not yet connected to SQL Server.
+        Dashboard statistics and project progress
+        are calculated from your account's data.
     </p>
 
 </div>

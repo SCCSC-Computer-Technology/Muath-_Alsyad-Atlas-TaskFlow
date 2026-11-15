@@ -1,204 +1,141 @@
 ﻿
-@* App #1 - Atlas TaskFlow - Projects Page *@ @model List<Atlas_TaskFlow_App.Models.Project> @ {
+@* App #1 - Atlas TaskFlow - Create Project *@
+@model Atlas_TaskFlow_App.Models.Project
+
+@{
     Layout = "_AppLayout";
-    ViewData ["Title"] = "Projects";
-    int total = ViewBag.TotalProjects;
-    int active = ViewBag.ActiveProjects;
-    int totalTasks = ViewBag.TotalTasks;
-    int completedTasks = ViewBag.CompletedTasks;
-    string search = ViewBag.Search ?? "";
-    string status = ViewBag.Status ?? "";
-    string ? message = TempData["ProjectMessage"] as string;
-    string ? error = TempData["ProjectError"] as string;
+    ViewData["Title"] = "Create Project";
+
+    string? error = ViewBag.Error as string;
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/projects.css" />
 }
 
-<div class="projects-page" >
+<div class="projects-page">
 
-<div class="projects-heading" >
-<div >
-<h1 > Projects</h1 >
-<p > Manage your projects and track their progress.</p >
-</div >
+    <div class="projects-heading">
+        <div>
+            <h1>Create New Project</h1>
+            <p>Add a project to organize your tasks.</p>
+        </div>
 
-<a href="@Url.Action("Create", "Projects")"
-class="projects-primary-btn" >
-+ New Project
-</a >
-</div >
+        <a class="projects-secondary-btn"
+           href="@Url.Action("Index", "Projects")">
+            Back to Projects
+        </a>
+    </div>
 
-@if (message != null) {
-    <div class="projects-message success" role="status"> @message </div>
-}
+    <section class="projects-form-card">
 
-@if (error != null) {
-    <div class="projects-message error" role="alert"> @error </div>
-}
+        <h2>Project Details</h2>
 
-<!-- PROJECT STATISTICS -->
-<div class="projects-stats" >
+        @if (!string.IsNullOrWhiteSpace(error))
+        {
+            <div class="projects-message error" role="alert">
+                @error
+            </div>
+        }
 
-<div class="projects-stat-card" >
-<span > Total Projects</span >
-<strong > @total</strong >
-</div >
+        <div asp-validation-summary="All"
+             class="projects-validation"></div>
 
-<div class="projects-stat-card" >
-<span > Active Projects</span >
-<strong > @active</strong >
-</div >
+        <form method="post"
+              action="@Url.Action("Create", "Projects")">
 
-<div class="projects-stat-card" >
-<span > Total Tasks</span >
-<strong > @totalTasks</strong >
-</div >
+            @Html.AntiForgeryToken()
 
-<div class="projects-stat-card" >
-<span > Completed Tasks</span >
-<strong > @completedTasks</strong >
-</div >
+            <div class="projects-form-grid">
 
-</div >
-<!-- SEARCH AND FILTER -->
-<form method="get"
-action="@Url.Action("Index", "Projects")"
-class="projects-filters" >
+                <div class="projects-field projects-full">
+                    <label for="projectName">Project Name *</label>
 
-<input type="search"
-name="search"
-value="@search"
-placeholder="Search projects..." / >
+                    <input id="projectName"
+                           type="text"
+                           name="Name"
+                           value="@Model.Name"
+                           maxlength="150"
+                           placeholder="Enter project name"
+                           required />
+                </div>
 
-<select name="status" >
-<option value="" > All Statuses</option >
+                <div class="projects-field projects-full">
+                    <label for="projectDescription">Description</label>
 
-<option value="Planning"
-selected="@(status == "Planning")" >
-Planning
-</option >
+                    <textarea id="projectDescription"
+                              name="Description"
+                              maxlength="500"
+                              rows="4"
+                              placeholder="What is this project about?">@Model.Description</textarea>
+                </div>
 
-<option value="Active"
-selected="@(status == "Active")" >
-Active
-</option >
+                <div class="projects-field">
+                    <label for="projectStart">Start Date</label>
 
-<option value="On Hold"
-selected="@(status == "On Hold")" >
-On Hold
-</option >
+                    <input id="projectStart"
+                           type="date"
+                           name="StartDate"
+                           value="@(Model.StartDate?.ToString("yyyy-MM-dd"))" />
+                </div>
 
-<option value="Completed"
-selected="@(status == "Completed")" >
-Completed
-</option >
-</select >
+                <div class="projects-field">
+                    <label for="projectDue">Due Date</label>
 
-<button type="submit" class="projects-primary-btn" >
-Apply
-</button >
+                    <input id="projectDue"
+                           type="date"
+                           name="DueDate"
+                           value="@(Model.DueDate?.ToString("yyyy-MM-dd"))" />
+                </div>
 
-<a href="@Url.Action("Index", "Projects")"
-class="projects-secondary-btn" >
-Clear
-</a >
+                <div class="projects-field projects-full">
+                    <label for="projectStatus">Status *</label>
 
-</form >
-<!-- PROJECT LIST -->
-<div class="projects-section-heading" >
-<h2 > All Projects</h2 >
-<span > @Model.Count project(s) found</span >
-</div >
+                    <select id="projectStatus"
+                            name="Status"
+                            required>
 
-<div class="projects-grid" >
+                        <option value="Planning"
+                                selected="@(Model.Status == "Planning")">
+                            Planning
+                        </option>
 
-@if (Model.Count == 0) {
-    <div class="projects-empty"> <h3>No projects found</h3> <p>Create a project or change your filters.</p> </div>
-}
+                        <option value="Active"
+                                selected="@(Model.Status == "Active")">
+                            Active
+                        </option>
 
-@foreach (var project in Model) {
-    int taskCount = project.Tasks.Count;
-    int completedCount = project.Tasks .Count(t => t.Status == "Completed");
-    int progress = taskCount == 0 ? 0 : (int)Math.Round(completedCount * 100.0 / taskCount);
-    string statusClass = project.Status == "Active" ? "active" : project.Status == "Completed" ? "completed" : project.Status == "On Hold" ? "hold" : "planning";
+                        <option value="On Hold"
+                                selected="@(Model.Status == "On Hold")">
+                            On Hold
+                        </option>
 
-    <article class="projects-card" >
+                        <option value="Completed"
+                                selected="@(Model.Status == "Completed")">
+                            Completed
+                        </option>
 
-    <div class="projects-card-header" >
+                    </select>
+                </div>
 
-    <div class="projects-folder-icon" > 📁</div >
+            </div>
 
-    <span class="projects-status @statusClass" >
-    @project.Status
-    </span >
+            <div class="projects-form-actions">
 
-    </div >
+                <a class="projects-secondary-btn"
+                   href="@Url.Action("Index", "Projects")">
+                    Cancel
+                </a>
 
-    <h3 > @project.Name</h3 >
+                <button type="submit"
+                        class="projects-primary-btn">
+                    Create Project
+                </button>
 
-    <p class="projects-description" >
-    @(string.IsNullOrWhiteSpace(project.Description)
-                        ? "No description added."
-                        : project.Description)
-    </p >
+            </div>
 
-    <div class="projects-details" >
+        </form>
 
-    <div >
-    <span > Tasks</span >
-    <strong > @taskCount</strong >
-    </div >
+    </section>
 
-    <div >
-    <span > Completed</span >
-    <strong > @completedCount</strong >
-    </div >
-
-    <div >
-    <span > Due Date</span >
-    <strong >
-    @(project.DueDate?.ToString("MMM dd, yyyy")
-                                ?? "Not set")
-    </strong >
-    </div >
-
-    </div >
-
-    <div class="projects-progress-heading" >
-    <span > Project Progress</span >
-    <strong > @progress%</strong >
-    </div >
-
-    <div class="projects-progress-track" >
-    <div class="projects-progress-fill"
-    style="width:@(progress)%" >
-    </div >
-    </div >
-
-    <p class="projects-progress-caption" >
-    @completedCount of @taskCount tasks completed
-    </p >
-
-    <div class="projects-card-actions" >
-
-    <a class="projects-edit-btn"
-    href="@Url.Action("Edit", "Projects", new { id = project.ProjectId })" >
-    Edit Project
-    </a >
-
-    @if (taskCount == 0) {
-        <form method="post" action="@Url.Action("Delete", "Projects")" onsubmit="return confirm('Delete this project permanently?');"> @Html.AntiForgeryToken() <input type="hidden" name="id" value="@project.ProjectId" /> <button type="submit" class="projects-delete-btn"> Delete </button> </form>
-    }
-
-    else {
-        <button type="button" class="projects-delete-btn" disabled title="This project contains tasks"> Delete </button>
-    }
-
-    </div> </article>
-}
-
-</div >
-
-</div >
+</div>

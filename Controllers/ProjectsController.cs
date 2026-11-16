@@ -1,21 +1,19 @@
 ﻿
-// App #1 - Atlas TaskFlow - Projects Controller
-// Step 6 - Each user manages only their own projects
+// App #1 - Atlas TaskFlow
+// Projects Controller - Admin-owned Projects
 // ASP.NET Core MVC + SQL Server - Database First
 
 using System;
 using System.Linq;
-using System.Security.Claims;
 using Atlas_TaskFlow_App.Data;
 using Atlas_TaskFlow_App.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 
 namespace Atlas_TaskFlow_App.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class ProjectsController : Controller
     {
         private readonly TaskFlowDbContext _db;
@@ -25,55 +23,59 @@ namespace Atlas_TaskFlow_App.Controllers
             _db = db;
         }
 
-        // Get the ID of the logged-in user
         private string CurrentUserId()
         {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? throw new InvalidOperationException(
-                    "The current user ID is missing.");
+            return TaskAccess.CurrentUserId(User);
         }
 
         // =====================================
-        // 1. SHOW MY PROJECTS
+        // 1. MY PROJECTS
         // =====================================
         [HttpGet]
-        public IActionResult Index(string? search, string? status)
+        public IActionResult Index(
+            string? search,
+            string? status)
         {
             string userId = CurrentUserId();
 
-            // Only projects owned by the current user
             var query = _db.Projects
-                .Include(p => p.Tasks)
                 .AsNoTracking()
+                .Include(p => p.Tasks)
                 .Where(p => p.OwnerUserId == userId);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 string term = search.Trim();
-                query = query.Where(p => p.Name.Contains(term));
+
+                query = query.Where(p =>
+                    p.Name.Contains(term));
             }
 
             if (!string.IsNullOrWhiteSpace(status))
             {
-                query = query.Where(p => p.Status == status);
+                query = query.Where(p =>
+                    p.Status == status);
             }
 
-            // Statistics for this user only
-            ViewBag.TotalProjects = _db.Projects
-                .Count(p => p.OwnerUserId == userId);
+            ViewBag.TotalProjects =
+                _db.Projects.Count(p =>
+                    p.OwnerUserId == userId);
 
-            ViewBag.ActiveProjects = _db.Projects
-                .Count(p => p.OwnerUserId == userId &&
-                            p.Status == "Active");
+            ViewBag.ActiveProjects =
+                _db.Projects.Count(p =>
+                    p.OwnerUserId == userId &&
+                    p.Status == "Active");
 
-            ViewBag.TotalTasks = _db.Tasks
-                .Count(t => t.Project != null &&
-                            t.Project.OwnerUserId == userId);
+            ViewBag.TotalTasks =
+                _db.Tasks.Count(t =>
+                    t.Project != null &&
+                    t.Project.OwnerUserId == userId);
 
-            ViewBag.CompletedTasks = _db.Tasks
-                .Count(t => t.Project != null &&
-                            t.Project.OwnerUserId == userId &&
-                            t.Status == "Completed");
+            ViewBag.CompletedTasks =
+                _db.Tasks.Count(t =>
+                    t.Project != null &&
+                    t.Project.OwnerUserId == userId &&
+                    t.Status == "Completed");
 
             ViewBag.Search = search ?? "";
             ViewBag.Status = status ?? "";
@@ -91,7 +93,7 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 2. CREATE PROJECT PAGE
+        // 2. CREATE PROJECT
         // =====================================
         [HttpGet]
         public IActionResult Create()
@@ -103,9 +105,6 @@ namespace Atlas_TaskFlow_App.Controllers
             });
         }
 
-        // =====================================
-        // 3. SAVE NEW PROJECT
-        // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(
@@ -114,11 +113,14 @@ namespace Atlas_TaskFlow_App.Controllers
         {
             string userId = CurrentUserId();
 
-            // The owner comes from Identity, never from HTML.
+            // Owner comes from Identity.
             input.OwnerUserId = userId;
-            ModelState.Remove(nameof(Project.OwnerUserId));
 
-            if (!ModelState.IsValid || !ValidProject(input))
+            ModelState.Remove(
+                nameof(Project.OwnerUserId));
+
+            if (!ModelState.IsValid ||
+                !ValidProject(input))
             {
                 ViewBag.Error =
                     "Please check the project information.";
@@ -133,8 +135,6 @@ namespace Atlas_TaskFlow_App.Controllers
                 StartDate = input.StartDate,
                 DueDate = input.DueDate,
                 Status = input.Status,
-
-                // Automatically assign the logged-in user
                 OwnerUserId = userId
             };
 
@@ -148,14 +148,13 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 4. EDIT PROJECT PAGE
+        // 3. EDIT PROJECT
         // =====================================
         [HttpGet]
         public IActionResult Edit(int id)
         {
             string userId = CurrentUserId();
 
-            // Check both project ID and owner
             var project = _db.Projects
                 .FirstOrDefault(p =>
                     p.ProjectId == id &&
@@ -169,9 +168,6 @@ namespace Atlas_TaskFlow_App.Controllers
             return View(project);
         }
 
-        // =====================================
-        // 5. SAVE PROJECT CHANGES
-        // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(
@@ -197,9 +193,12 @@ namespace Atlas_TaskFlow_App.Controllers
             }
 
             input.OwnerUserId = userId;
-            ModelState.Remove(nameof(Project.OwnerUserId));
 
-            if (!ModelState.IsValid || !ValidProject(input))
+            ModelState.Remove(
+                nameof(Project.OwnerUserId));
+
+            if (!ModelState.IsValid ||
+                !ValidProject(input))
             {
                 ViewBag.Error =
                     "Please check the project information.";
@@ -213,8 +212,7 @@ namespace Atlas_TaskFlow_App.Controllers
             project.DueDate = input.DueDate;
             project.Status = input.Status;
 
-            // We do NOT change project.OwnerUserId.
-
+            // Do not change the owner.
             _db.SaveChanges();
 
             TempData["ProjectMessage"] =
@@ -224,7 +222,7 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 6. DELETE PROJECT
+        // 4. DELETE PROJECT
         // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -242,13 +240,13 @@ namespace Atlas_TaskFlow_App.Controllers
                 return NotFound();
             }
 
-            bool hasTasks = _db.Tasks
-                .Any(t => t.ProjectId == id);
+            bool hasTasks = _db.Tasks.Any(t =>
+                t.ProjectId == id);
 
             if (hasTasks)
             {
                 TempData["ProjectError"] =
-                    "Cannot delete a project that contains tasks.";
+                    "Cannot delete a project containing tasks.";
 
                 return RedirectToAction(nameof(Index));
             }
@@ -264,14 +262,14 @@ namespace Atlas_TaskFlow_App.Controllers
             catch (DbUpdateException)
             {
                 TempData["ProjectError"] =
-                    "Project could not be deleted because it is referenced by other records.";
+                    "This project has related records and cannot be deleted.";
             }
 
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // 7. VALIDATE PROJECT
+        // 5. PROJECT VALIDATION
         // =====================================
         private bool ValidProject(Project project)
         {
@@ -289,8 +287,13 @@ namespace Atlas_TaskFlow_App.Controllers
                 project.StartDate.Value <= project.DueDate.Value;
 
             bool validStatus =
-                new[] { "Planning", "Active", "On Hold", "Completed" }
-                    .Contains(project.Status);
+                new[]
+                {
+                    "Planning",
+                    "Active",
+                    "On Hold",
+                    "Completed"
+                }.Contains(project.Status);
 
             return validName &&
                    validDescription &&
@@ -299,13 +302,14 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 8. ORIGINAL VIEW DIAGNOSTIC
-        // Available only during development
+        // 6. DEVELOPMENT VIEW DIAGNOSTIC
         // =====================================
         [HttpGet]
         public IActionResult CheckView(
-            [FromServices] Microsoft.AspNetCore.Hosting.IWebHostEnvironment env,
-            [FromServices] Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine)
+            [FromServices]
+            Microsoft.AspNetCore.Hosting.IWebHostEnvironment env,
+            [FromServices]
+            Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine)
         {
             if (!env.IsDevelopment())
             {
@@ -316,22 +320,20 @@ namespace Atlas_TaskFlow_App.Controllers
                 env.ContentRootPath,
                 "Views",
                 "Projects",
-                "Index.cshtml"
-            );
+                "Index.cshtml");
 
-            bool fileExists = System.IO.File.Exists(filePath);
+            bool fileExists =
+                System.IO.File.Exists(filePath);
 
             var projectsView = viewEngine.GetView(
                 null,
                 "/Views/Projects/Index.cshtml",
-                true
-            );
+                true);
 
             var tasksView = viewEngine.GetView(
                 null,
                 "/Views/Tasks/Index.cshtml",
-                true
-            );
+                true);
 
             return Content(
                 "Application Folder: " + env.ContentRootPath +
@@ -339,8 +341,7 @@ namespace Atlas_TaskFlow_App.Controllers
                 "\nProjects Razor View Found: " + projectsView.Success +
                 "\nTasks Razor View Found: " + tasksView.Success +
                 "\n\nExpected File: " + filePath,
-                "text/plain"
-            );
+                "text/plain");
         }
     }
 }

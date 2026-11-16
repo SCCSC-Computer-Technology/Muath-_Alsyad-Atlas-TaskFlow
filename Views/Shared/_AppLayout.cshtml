@@ -1,6 +1,11 @@
-﻿@{
-    var pageTitle = ViewData["Title"]?.ToString()
-                    ?? "Dashboard";
+﻿
+@* App #1 - Atlas TaskFlow - Application Layout *@
+
+@{
+    string pageTitle =
+        ViewData["Title"]?.ToString() ?? "Dashboard";
+
+    bool isAdmin = User.IsInRole("Admin");
 }
 
 <!DOCTYPE html>
@@ -24,12 +29,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
-    <!-- Common application styles -->
     <link rel="stylesheet"
           href="@Url.Content("~/css/app.css")">
 
-    <!-- Page-specific styles -->
     @await RenderSectionAsync("Styles", required: false)
+
 </head>
 
 <body>
@@ -38,15 +42,12 @@
 
     <div class="app-shell">
 
-        <!-- Reusable sidebar -->
         @await Html.PartialAsync("_Sidebar")
 
         <div class="app-main">
 
-            <!-- Reusable topbar -->
             @await Html.PartialAsync("_Topbar")
 
-            <!-- Content changes on each page -->
             <main id="main-content"
                   class="app-content">
 
@@ -59,9 +60,11 @@
     </div>
 
     @await RenderSectionAsync("Scripts", required: false)
-    
-    @await Html.PartialAsync("_CreateTaskModal")
 
+    @if (isAdmin)
+    {
+        @await Html.PartialAsync("_CreateTaskModal")
+    }
 
 </body>
 </html>

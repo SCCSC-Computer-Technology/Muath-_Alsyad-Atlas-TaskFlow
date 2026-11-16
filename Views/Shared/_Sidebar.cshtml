@@ -1,30 +1,41 @@
 ﻿
-@* App #1 - Atlas TaskFlow - Complete Sidebar Navigation *@
-
+@* App #1 - Atlas TaskFlow - Role-Aware Sidebar *@
 
 @{
-    // Get the current controller and action
-    string controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string controller =
+        ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
 
-    // Check which page is currently open
+    string action =
+        ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool isAdmin = User.IsInRole("Admin");
+
     bool isDashboard = controller == "Dashboard";
     bool isTasks = controller == "Tasks";
     bool isProjects = controller == "Projects";
 
-    bool isTeam = controller == "Workspace" && action == "TeamTasks";
+    bool isTeam =
+        controller == "Workspace" &&
+        action == "TeamTasks";
 
-    bool isCalendar = controller == "Workspace" && action == "Calendar";
+    bool isCalendar =
+        controller == "Workspace" &&
+        action == "Calendar";
 
-    bool isNotifications = controller == "Notifications" ||
-        (controller == "Workspace" && action == "Notifications");
+    bool isNotifications =
+        controller == "Notifications" ||
+        (controller == "Workspace" &&
+         action == "Notifications");
 
-    bool isSettings = controller == "Settings" ||
-        (controller == "Workspace" && action == "Settings");
+    bool isSettings =
+        controller == "Settings" ||
+        (controller == "Workspace" &&
+         action == "Settings");
 
-    bool isHelp = controller == "Workspace" && action == "Help";
+    bool isHelp =
+        controller == "Workspace" &&
+        action == "Help";
 }
-
 
 <aside class="app-sidebar">
 
@@ -32,7 +43,7 @@
     <div class="sidebar-brand">
 
         <a class="brand-link"
-           href="@Url.Action("Index","Dashboard")">
+           href="@Url.Action("Index", "Dashboard")">
 
             <svg class="brand-icon" aria-hidden="true">
                 <use href="#i-logo"></use>
@@ -44,17 +55,19 @@
         </a>
 
         <p class="brand-description">
-            Build. Deploy. Remember. Protect.<br />
+            Build. Deploy. Remember. Protect.
             Prepare. Release.
         </p>
+
     </div>
 
     <!-- MAIN NAVIGATION -->
-    <nav class="sidebar-nav" aria-label="Main navigation">
+    <nav class="sidebar-nav"
+         aria-label="Main navigation">
 
         <!-- DASHBOARD -->
         <a class="nav-item @(isDashboard ? "active" : "")"
-           href="@Url.Action("Index","Dashboard")"
+           href="@Url.Action("Index", "Dashboard")"
            aria-current="@(isDashboard ? "page" : null)">
 
             <svg class="icon" aria-hidden="true">
@@ -66,7 +79,7 @@
 
         <!-- MY TASKS -->
         <a class="nav-item @(isTasks ? "active" : "")"
-           href="@Url.Action("Index","Tasks")"
+           href="@Url.Action("Index", "Tasks")"
            aria-current="@(isTasks ? "page" : null)">
 
             <svg class="icon" aria-hidden="true">
@@ -76,21 +89,24 @@
             <span>My Tasks</span>
         </a>
 
-        <!-- TEAM TASKS -->
-        <a class="nav-item @(isTeam ? "active" : "")"
-           href="@Url.Action("TeamTasks","Workspace")"
-           aria-current="@(isTeam ? "page" : null)">
+        @if (isAdmin)
+        {
+            <!-- TEAM TASKS: ADMIN ONLY -->
+            <a class="nav-item @(isTeam ? "active" : "")"
+               href="@Url.Action("TeamTasks", "Workspace")"
+               aria-current="@(isTeam ? "page" : null)">
 
-            <svg class="icon" aria-hidden="true">
-                <use href="#i-team"></use>
-            </svg>
+                <svg class="icon" aria-hidden="true">
+                    <use href="#i-team"></use>
+                </svg>
 
-            <span>Team Tasks</span>
-        </a>
+                <span>Team Tasks</span>
+            </a>
+        }
 
         <!-- CALENDAR -->
         <a class="nav-item @(isCalendar ? "active" : "")"
-           href="@Url.Action("Calendar","Workspace")"
+           href="@Url.Action("Calendar", "Workspace")"
            aria-current="@(isCalendar ? "page" : null)">
 
             <svg class="icon" aria-hidden="true">
@@ -100,21 +116,24 @@
             <span>Calendar</span>
         </a>
 
-        <!-- PROJECTS -->
-        <a class="nav-item @(isProjects ? "active" : "")"
-           href="@Url.Action("Index","Projects")"
-           aria-current="@(isProjects ? "page" : null)">
+        @if (isAdmin)
+        {
+            <!-- PROJECTS: ADMIN ONLY -->
+            <a class="nav-item @(isProjects ? "active" : "")"
+               href="@Url.Action("Index", "Projects")"
+               aria-current="@(isProjects ? "page" : null)">
 
-            <svg class="icon" aria-hidden="true">
-                <use href="#i-folder"></use>
-            </svg>
+                <svg class="icon" aria-hidden="true">
+                    <use href="#i-folder"></use>
+                </svg>
 
-            <span>Projects</span>
-        </a>
+                <span>Projects</span>
+            </a>
+        }
 
         <!-- NOTIFICATIONS -->
         <a class="nav-item @(isNotifications ? "active" : "")"
-           href="@Url.Action("Notifications","Workspace")"
+           href="@Url.Action("Index", "Notifications")"
            aria-current="@(isNotifications ? "page" : null)">
 
             <svg class="icon" aria-hidden="true">
@@ -131,7 +150,7 @@
 
         <!-- SETTINGS -->
         <a class="nav-item @(isSettings ? "active" : "")"
-           href="@Url.Action("Settings","Workspace")"
+           href="@Url.Action("Index", "Settings")"
            aria-current="@(isSettings ? "page" : null)">
 
             <svg class="icon" aria-hidden="true">
@@ -143,7 +162,7 @@
 
         <!-- HELP -->
         <a class="nav-item @(isHelp ? "active" : "")"
-           href="@Url.Action("Help","Workspace")"
+           href="@Url.Action("Help", "Workspace")"
            aria-current="@(isHelp ? "page" : null)">
 
             <svg class="icon" aria-hidden="true">
@@ -156,7 +175,7 @@
     </div>
 
     <p class="sidebar-version">
-        Version 1.4.0 · Wireframe Preview
+        Version 1.4.0 · Atlas TaskFlow
     </p>
 
 </aside>

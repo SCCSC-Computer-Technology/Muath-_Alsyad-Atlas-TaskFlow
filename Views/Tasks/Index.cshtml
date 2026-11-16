@@ -1,5 +1,6 @@
 ﻿
-@* App #1 - Atlas TaskFlow - My Tasks Page *@
+@* App #1 - Atlas TaskFlow - My Tasks *@
+@* Admin: Manage Tasks / Member: Update Assigned Status *@
 
 @model List<Atlas_TaskFlow_App.Models.TaskItem>
 @using Atlas_TaskFlow_App.Models
@@ -7,6 +8,8 @@
 @{
     Layout = "_AppLayout";
     ViewData["Title"] = "My Tasks";
+
+    bool isAdmin = User.IsInRole("Admin");
 
     var projects = ViewBag.ProjectList as List<Project>
                    ?? new List<Project>();
@@ -20,11 +23,11 @@
     string period = ViewBag.Period ?? "";
     string sort = ViewBag.Sort ?? "";
 
-    int projectId = ViewBag.ProjectId;
-    int total = ViewBag.TotalTasks;
-    int completed = ViewBag.CompletedTasks;
-    int overdue = ViewBag.OverdueTasks;
-    int dueThisWeek = ViewBag.DueThisWeek;
+    int projectId = Convert.ToInt32(ViewBag.ProjectId ?? 0);
+    int total = Convert.ToInt32(ViewBag.TotalTasks ?? 0);
+    int completed = Convert.ToInt32(ViewBag.CompletedTasks ?? 0);
+    int overdue = Convert.ToInt32(ViewBag.OverdueTasks ?? 0);
+    int dueThisWeek = Convert.ToInt32(ViewBag.DueThisWeek ?? 0);
 
     int completionRate = total == 0
         ? 0
@@ -34,27 +37,34 @@
 }
 
 @section Styles {
-    <link rel="stylesheet"
-          href="@Url.Content("~/css/my-tasks.css")" />
+    <link rel="stylesheet" href="~/css/my-tasks.css" />
 }
 
 <div class="mytasks-page">
 
-    <!-- PAGE HEADER -->
+    <!-- HEADER -->
     <div class="mytasks-header">
 
         <div>
             <h1>My Tasks</h1>
-            <p>Track your assignments, priorities, and deadlines in one place.</p>
+
+            <p>
+                @(isAdmin
+                    ? "Manage your tasks, priorities, and deadlines."
+                    : "View assigned tasks and update your progress.")
+            </p>
         </div>
 
         <div class="mytasks-header-actions">
 
-            <button type="button"
-                    class="mytasks-primary-btn"
-                    onclick="document.getElementById('createTaskDialog').showModal()">
-                + New Task
-            </button>
+            @if (isAdmin)
+            {
+                <button type="button"
+                        class="mytasks-primary-btn"
+                        onclick="document.getElementById('createTaskDialog').showModal()">
+                    + New Task
+                </button>
+            }
 
             <a class="mytasks-export-btn"
                href="@Url.Action("Export", "Tasks")">
@@ -62,10 +72,9 @@
             </a>
 
         </div>
-
     </div>
 
-    @if (message != null)
+    @if (!string.IsNullOrWhiteSpace(message))
     {
         <div class="mytasks-success-message" role="status">
             @message
@@ -99,27 +108,49 @@
 
                 <select name="priority">
                     <option value="">All Priorities</option>
-                    <option value="Low" selected="@(priority == "Low")">Low</option>
-                    <option value="Medium" selected="@(priority == "Medium")">Medium</option>
-                    <option value="High" selected="@(priority == "High")">High</option>
-                    <option value="Urgent" selected="@(priority == "Urgent")">Urgent</option>
+
+                    <option value="Low"
+                            selected="@(priority == "Low")">Low</option>
+
+                    <option value="Medium"
+                            selected="@(priority == "Medium")">Medium</option>
+
+                    <option value="High"
+                            selected="@(priority == "High")">High</option>
+
+                    <option value="Urgent"
+                            selected="@(priority == "Urgent")">Urgent</option>
                 </select>
 
                 <select name="status">
                     <option value="">All Statuses</option>
-                    <option value="To Do" selected="@(status == "To Do")">To Do</option>
-                    <option value="In Progress" selected="@(status == "In Progress")">In Progress</option>
-                    <option value="Completed" selected="@(status == "Completed")">Completed</option>
+
+                    <option value="To Do"
+                            selected="@(status == "To Do")">To Do</option>
+
+                    <option value="In Progress"
+                            selected="@(status == "In Progress")">In Progress</option>
+
+                    <option value="Completed"
+                            selected="@(status == "Completed")">Completed</option>
                 </select>
 
                 <select name="sort">
-                    <option value="" selected="@(sort == "")">Due Date ↑</option>
-                    <option value="due-desc" selected="@(sort == "due-desc")">Due Date ↓</option>
-                    <option value="newest" selected="@(sort == "newest")">Newest First</option>
-                    <option value="title" selected="@(sort == "title")">Task Title</option>
+                    <option value=""
+                            selected="@(sort == "")">Due Date ↑</option>
+
+                    <option value="due-desc"
+                            selected="@(sort == "due-desc")">Due Date ↓</option>
+
+                    <option value="newest"
+                            selected="@(sort == "newest")">Newest First</option>
+
+                    <option value="title"
+                            selected="@(sort == "title")">Task Title</option>
                 </select>
 
-                <button type="submit" class="mytasks-filter-btn">
+                <button type="submit"
+                        class="mytasks-filter-btn">
                     Apply
                 </button>
 
@@ -129,7 +160,6 @@
                 </a>
 
             </div>
-
         </form>
 
         <!-- QUICK FILTERS -->
@@ -161,13 +191,11 @@
             </a>
 
         </div>
-
     </section>
 
-    <!-- PAGE CONTENT -->
+    <!-- TASKS AND SUMMARY -->
     <div class="mytasks-content">
 
-        <!-- LEFT: TASK LIST -->
         <div class="mytasks-main">
 
             <section class="mytasks-panel">
@@ -193,12 +221,13 @@
                         </thead>
 
                         <tbody>
-
                             @if (Model.Count == 0)
                             {
                                 <tr>
                                     <td colspan="6" class="mytasks-empty">
-                                        No tasks found. Try changing your filters.
+                                        @(isAdmin
+                                            ? "No tasks found."
+                                            : "No tasks assigned to your account yet.")
                                     </td>
                                 </tr>
                             }
@@ -206,15 +235,16 @@
                             {
                                 @foreach (var task in Model)
                                 {
+                                    string priorityClass =
+                                        (task.Priority ?? "Low").ToLowerInvariant();
+
                                     string statusClass =
                                         task.Status == "Completed" ? "completed" :
                                         task.Status == "In Progress" ? "progress" :
                                         "todo";
 
-                                    string priorityClass =
-                                        task.Priority.ToLowerInvariant();
-
                                     <tr>
+
                                         <td class="mytasks-title-cell">
                                             @task.Title
                                         </td>
@@ -234,22 +264,18 @@
                                         </td>
 
                                         <td>
-                                            <span class="mytasks-status status-@statusClass">
-                                                @task.Status
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            <div class="mytasks-row-actions">
-
-                                                <a class="mytasks-edit-link"
-                                                   href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })">
-                                                    Edit
-                                                </a>
-
+                                            @if (isAdmin)
+                                            {
+                                                <span class="mytasks-status status-@statusClass">
+                                                    @task.Status
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <!-- Member: status-only form -->
                                                 <form method="post"
-                                                      action="@Url.Action("Delete", "Tasks")"
-                                                      onsubmit="return confirm('Delete this task permanently?');">
+                                                      id="statusForm-@task.TaskId"
+                                                      action="@Url.Action("UpdateStatus", "Tasks")">
 
                                                     @Html.AntiForgeryToken()
 
@@ -257,25 +283,82 @@
                                                            name="id"
                                                            value="@task.TaskId" />
 
-                                                    <button type="submit"
-                                                            class="mytasks-delete-btn">
-                                                        Delete
-                                                    </button>
+                                                    <select name="status"
+                                                            aria-label="Status for @task.Title"
+                                                            style="padding:8px;
+                                                                   border:1px solid #dce5f1;
+                                                                   border-radius:7px;
+                                                                   background:white;">
+
+                                                        <option value="To Do"
+                                                                selected="@(task.Status == "To Do")">
+                                                            To Do
+                                                        </option>
+
+                                                        <option value="In Progress"
+                                                                selected="@(task.Status == "In Progress")">
+                                                            In Progress
+                                                        </option>
+
+                                                        <option value="Completed"
+                                                                selected="@(task.Status == "Completed")">
+                                                            Completed
+                                                        </option>
+
+                                                    </select>
 
                                                 </form>
-
-                                            </div>
+                                            }
                                         </td>
+
+                                        <td>
+                                            @if (isAdmin)
+                                            {
+                                                <div class="mytasks-row-actions">
+
+                                                    <a class="mytasks-edit-link"
+                                                       href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })">
+                                                        Edit
+                                                    </a>
+
+                                                    <form method="post"
+                                                          action="@Url.Action("Delete", "Tasks")"
+                                                          onsubmit="return confirm('Delete this task permanently?');">
+
+                                                        @Html.AntiForgeryToken()
+
+                                                        <input type="hidden"
+                                                               name="id"
+                                                               value="@task.TaskId" />
+
+                                                        <button type="submit"
+                                                                class="mytasks-delete-btn">
+                                                            Delete
+                                                        </button>
+
+                                                    </form>
+
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit"
+                                                        form="statusForm-@task.TaskId"
+                                                        class="mytasks-filter-btn"
+                                                        style="padding:8px 11px;">
+                                                    Save Status
+                                                </button>
+                                            }
+                                        </td>
+
                                     </tr>
                                 }
                             }
-
                         </tbody>
 
                     </table>
 
                 </div>
-
             </section>
 
             <!-- QUICK NOTES -->
@@ -292,7 +375,7 @@
 
                     <div class="mytasks-tip tip-green">
                         <strong>Keep Status Updated</strong>
-                        <p>Update task status as work progresses.</p>
+                        <p>Update your status as work progresses.</p>
                     </div>
 
                     <div class="mytasks-tip tip-orange">
@@ -301,12 +384,11 @@
                     </div>
 
                 </div>
-
             </section>
 
         </div>
 
-        <!-- RIGHT: TASK SUMMARY -->
+        <!-- RIGHT SIDEBAR -->
         <aside class="mytasks-sidebar">
 
             <section class="mytasks-panel">
@@ -340,7 +422,6 @@
                 </div>
 
                 <div class="mytasks-completion">
-
                     <div class="mytasks-completion-heading">
                         <strong>Completion Rate</strong>
                         <span>@completionRate%</span>
@@ -353,7 +434,6 @@
                     </div>
 
                     <p>@completed of @total tasks completed</p>
-
                 </div>
 
             </section>
@@ -392,11 +472,9 @@
                     }
 
                 </div>
-
             </section>
 
         </aside>
 
     </div>
-
 </div>

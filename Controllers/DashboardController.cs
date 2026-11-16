@@ -1,14 +1,12 @@
 ﻿
 // App #1 - Atlas TaskFlow
-// Dashboard Controller - Current User Data
+// Dashboard Controller - Shared Admin / Member Access
 
 using System;
 using System.Linq;
-using System.Security.Claims;
 using Atlas_TaskFlow_App.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Atlas_TaskFlow_App.Controllers
 {
@@ -16,43 +14,40 @@ namespace Atlas_TaskFlow_App.Controllers
     public class DashboardController : Controller
     {
         private readonly TaskFlowDbContext _db;
+        private readonly TeamDataContext _teamDb;
+        private readonly ApplicationDbContext _identityDb;
 
-        public DashboardController(TaskFlowDbContext db)
+        public DashboardController(
+            TaskFlowDbContext db,
+            TeamDataContext teamDb,
+            ApplicationDbContext identityDb)
         {
             _db = db;
+            _teamDb = teamDb;
+            _identityDb = identityDb;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
-            // Get the logged-in user's Identity ID
-            string? userId = User.FindFirst(
-                ClaimTypes.NameIdentifier)?.Value;
+            // Both Dashboard and My Tasks now use
+            // the SAME permission-checking method.
+            var tasks = TaskAccess.GetVisibleTasks(
+                _db,
+                _teamDb,
+                _identityDb,
+                User);
 
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Challenge();
-            }
+            var projects = TaskAccess.GetVisibleProjects(
+                _db,
+                User,
+                tasks);
 
-            // Only tasks from projects owned by this user
-            var tasks = _db.Tasks
-                .Include(t => t.Project)
-                .Where(t =>
-                    t.Project != null &&
-                    t.Project.OwnerUserId == userId)
-                .OrderBy(t => t.DueDate)
-                .ToList();
+            // Statistics are based on visible data.
+            ViewBag.ActiveProjects = projects.Count(
+                p => p.Status == "Active");
 
-            // Only this user's active projects
-            ViewBag.ActiveProjects = _db.Projects
-                .Count(p =>
-                    p.OwnerUserId == userId &&
-                    p.Status == "Active");
-
-            // Only this user's projects in Create Task
-            ViewBag.ProjectList = _db.Projects
-                .Where(p => p.OwnerUserId == userId)
-                .OrderBy(p => p.Name)
-                .ToList();
+            ViewBag.ProjectList = projects;
 
             return View(tasks);
         }

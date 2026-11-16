@@ -1,11 +1,11 @@
 ﻿
-// App #1 - Atlas TaskFlow - Tasks Controller
-// Step 6 - User-owned Tasks and Projects
+// App #1 - Atlas TaskFlow
+// Tasks Controller - Real Admin / Member Authorization
 // ASP.NET Core MVC + SQL Server - Database First
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using Atlas_TaskFlow_App.Data;
 using Atlas_TaskFlow_App.Models;
@@ -19,22 +19,37 @@ namespace Atlas_TaskFlow_App.Controllers
     public class TasksController : Controller
     {
         private readonly TaskFlowDbContext _db;
+        private readonly TeamDataContext _teamDb;
+        private readonly ApplicationDbContext _identityDb;
 
-        public TasksController(TaskFlowDbContext db)
+        public TasksController(
+            TaskFlowDbContext db,
+            TeamDataContext teamDb,
+            ApplicationDbContext identityDb)
         {
             _db = db;
+            _teamDb = teamDb;
+            _identityDb = identityDb;
         }
 
-        // Current user's Identity ID
+        // Current authenticated account.
         private string CurrentUserId()
         {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? throw new InvalidOperationException(
-                    "The current user ID is missing.");
+            return TaskAccess.CurrentUserId(User);
+        }
+
+        // Use identical rules everywhere.
+        private List<TaskItem> VisibleTasks()
+        {
+            return TaskAccess.GetVisibleTasks(
+                _db,
+                _teamDb,
+                _identityDb,
+                User);
         }
 
         // =====================================
-        // 1. MY TASKS PAGE
+        // 1. DISPLAY MY TASKS
         // =====================================
         [HttpGet]
         public IActionResult Index(
@@ -45,83 +60,94 @@ namespace Atlas_TaskFlow_App.Controllers
             string? period,
             string? sort)
         {
-            string userId = CurrentUserId();
             DateTime today = DateTime.Today;
 
             int daysSinceMonday =
                 ((int)today.DayOfWeek + 6) % 7;
 
-            DateTime monday = today.AddDays(-daysSinceMonday);
+            DateTime monday =
+                today.AddDays(-daysSinceMonday);
+
             DateTime nextMonday = monday.AddDays(7);
 
-            // Start with only this user's tasks
-            var myTasks = _db.Tasks
-                .Where(t => t.Project != null &&
-                            t.Project.OwnerUserId == userId);
+            // Shared Admin / Member task access.
+            var allTasks = VisibleTasks();
 
-            // Statistics
-            ViewBag.TotalTasks = myTasks.Count();
+            var projects = TaskAccess.GetVisibleProjects(
+                _db,
+                User,
+                allTasks);
 
-            ViewBag.CompletedTasks = myTasks
-                .Count(t => t.Status == "Completed");
+            ViewBag.ProjectList = projects;
 
-            ViewBag.OverdueTasks = myTasks
-                .Count(t => t.DueDate < today &&
-                            t.Status != "Completed");
+            // Calculate statistics before filters.
+            ViewBag.TotalTasks = allTasks.Count;
 
-            ViewBag.DueThisWeek = myTasks
-                .Count(t => t.DueDate >= monday &&
-                            t.DueDate < nextMonday &&
-                            t.Status != "Completed");
+            ViewBag.CompletedTasks = allTasks.Count(t =>
+                t.Status == "Completed");
 
-            ViewBag.UpcomingTasks = myTasks
-                .Where(t => t.DueDate >= today &&
-                            t.Status != "Completed")
+            ViewBag.OverdueTasks = allTasks.Count(t =>
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date < today &&
+                t.Status != "Completed");
+
+            ViewBag.DueThisWeek = allTasks.Count(t =>
+                t.DueDate >= today &&
+                t.DueDate < nextMonday &&
+                t.Status != "Completed");
+
+            ViewBag.UpcomingTasks = allTasks
+                .Where(t =>
+                    t.DueDate >= today &&
+                    t.Status != "Completed")
                 .OrderBy(t => t.DueDate)
                 .Take(5)
                 .ToList();
 
-            var query = myTasks
-                .Include(t => t.Project)
-                .AsQueryable();
+            IEnumerable<TaskItem> query = allTasks;
 
-            // Search
+            // Search titles or project names.
             if (!string.IsNullOrWhiteSpace(search))
             {
                 string term = search.Trim();
 
                 query = query.Where(t =>
-                    t.Title.Contains(term) ||
-                    (t.Project != null &&
-                     t.Project.Name.Contains(term)));
+                    t.Title.Contains(
+                        term,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    (t.Project?.Name.Contains(
+                        term,
+                        StringComparison.OrdinalIgnoreCase)
+                        ?? false));
             }
 
-            // Project filter
-            if (projectId.HasValue && projectId.Value > 0)
+            // Filter by project.
+            if (projectId.HasValue &&
+                projectId.Value > 0)
             {
                 query = query.Where(t =>
                     t.ProjectId == projectId.Value);
             }
 
-            // Priority filter
-            if (!string.IsNullOrEmpty(priority))
+            // Filter by priority.
+            if (!string.IsNullOrWhiteSpace(priority))
             {
                 query = query.Where(t =>
                     t.Priority == priority);
             }
 
-            // Status filter
-            if (!string.IsNullOrEmpty(status))
+            // Filter by status.
+            if (!string.IsNullOrWhiteSpace(status))
             {
                 query = query.Where(t =>
                     t.Status == status);
             }
 
-            // Date filters
+            // Date filters.
             if (period == "today")
             {
                 query = query.Where(t =>
-                    t.DueDate == today);
+                    t.DueDate?.Date == today);
             }
             else if (period == "week")
             {
@@ -141,10 +167,11 @@ namespace Atlas_TaskFlow_App.Controllers
                     t.Status == "Completed");
             }
 
-            // Sorting
+            // Sorting.
             if (sort == "newest")
             {
-                query = query.OrderByDescending(t => t.TaskId);
+                query = query.OrderByDescending(t =>
+                    t.TaskId);
             }
             else if (sort == "title")
             {
@@ -152,7 +179,8 @@ namespace Atlas_TaskFlow_App.Controllers
             }
             else if (sort == "due-desc")
             {
-                query = query.OrderByDescending(t => t.DueDate);
+                query = query.OrderByDescending(t =>
+                    t.DueDate);
             }
             else
             {
@@ -160,9 +188,6 @@ namespace Atlas_TaskFlow_App.Controllers
                     .OrderBy(t => t.DueDate)
                     .ThenBy(t => t.TaskId);
             }
-
-            // Only my projects in the dropdown
-            LoadProjects(userId);
 
             ViewBag.Search = search ?? "";
             ViewBag.ProjectId = projectId ?? 0;
@@ -175,18 +200,18 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 2. CREATE TASK PAGE
+        // 2. CREATE TASK - ADMIN ONLY
         // =====================================
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult Create()
         {
             LoadProjects(CurrentUserId());
+
             return View();
         }
 
-        // =====================================
-        // 3. SAVE NEW TASK
-        // =====================================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(
@@ -195,13 +220,15 @@ namespace Atlas_TaskFlow_App.Controllers
         {
             string userId = CurrentUserId();
 
-            // ValidTask also checks project ownership.
-            if (!ModelState.IsValid || !ValidTask(task, userId))
+            if (!ModelState.IsValid ||
+                !ValidTask(task, userId))
             {
                 TempData["CreateTaskError"] =
                     "Please check your task information and project.";
 
-                return RedirectToAction("Index", "Dashboard");
+                return RedirectToAction(
+                    "Index",
+                    "Dashboard");
             }
 
             task.Title = task.Title.Trim();
@@ -216,8 +243,9 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 4. EDIT TASK PAGE
+        // 3. EDIT TASK - ADMIN OWNER ONLY
         // =====================================
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult Edit(int id)
         {
@@ -239,9 +267,7 @@ namespace Atlas_TaskFlow_App.Controllers
             return View(task);
         }
 
-        // =====================================
-        // 5. SAVE TASK CHANGES
-        // =====================================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(
@@ -256,7 +282,7 @@ namespace Atlas_TaskFlow_App.Controllers
                 return BadRequest();
             }
 
-            // Existing task must belong to the user
+            // Verify ownership on the server.
             var task = _db.Tasks
                 .FirstOrDefault(t =>
                     t.TaskId == id &&
@@ -268,13 +294,13 @@ namespace Atlas_TaskFlow_App.Controllers
                 return NotFound();
             }
 
-            // New ProjectId must also belong to the user
-            if (!ModelState.IsValid || !ValidTask(input, userId))
+            if (!ModelState.IsValid ||
+                !ValidTask(input, userId))
             {
                 LoadProjects(userId);
 
                 ViewBag.Error =
-                    "Please check the task information and project.";
+                    "Please check the task information.";
 
                 return View(input);
             }
@@ -295,8 +321,58 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 6. DELETE TASK
+        // 4. MEMBER UPDATES STATUS ONLY
         // =====================================
+        [Authorize(Roles = "Member")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult UpdateStatus(
+            int id,
+            string status)
+        {
+            // Accept only the three allowed statuses.
+            if (status != "To Do" &&
+                status != "In Progress" &&
+                status != "Completed")
+            {
+                return BadRequest();
+            }
+
+            // Verify the task belongs to this member.
+            var assignedTask = VisibleTasks()
+                .FirstOrDefault(t => t.TaskId == id);
+
+            if (assignedTask == null)
+            {
+                return NotFound();
+            }
+
+            // Load the actual database row for editing.
+            var task = _db.Tasks
+                .FirstOrDefault(t =>
+                    t.TaskId == id &&
+                    t.ProjectId == assignedTask.ProjectId);
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            // This is the ONLY field a Member can change.
+            task.Status = status;
+
+            _db.SaveChanges();
+
+            TempData["TaskMessage"] =
+                "Task status updated successfully!";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // =====================================
+        // 5. DELETE TASK - ADMIN OWNER ONLY
+        // =====================================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id)
@@ -314,27 +390,32 @@ namespace Atlas_TaskFlow_App.Controllers
                 return NotFound();
             }
 
-            _db.Tasks.Remove(task);
-            _db.SaveChanges();
+            try
+            {
+                _db.Tasks.Remove(task);
+                _db.SaveChanges();
 
-            TempData["TaskMessage"] =
-                "Task deleted successfully!";
+                TempData["TaskMessage"] =
+                    "Task deleted successfully!";
+            }
+            catch (DbUpdateException)
+            {
+                // Assigned tasks or notifications may
+                // prevent deletion because of foreign keys.
+                TempData["TaskMessage"] =
+                    "Task could not be deleted while related records exist. Remove its assignment first.";
+            }
 
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // 7. EXPORT MY TASKS TO CSV
+        // 6. EXPORT VISIBLE TASKS
         // =====================================
         [HttpGet]
         public IActionResult Export()
         {
-            string userId = CurrentUserId();
-
-            var tasks = _db.Tasks
-                .Include(t => t.Project)
-                .Where(t => t.Project != null &&
-                            t.Project.OwnerUserId == userId)
+            var tasks = VisibleTasks()
                 .OrderBy(t => t.TaskId)
                 .ToList();
 
@@ -350,24 +431,28 @@ namespace Atlas_TaskFlow_App.Controllers
                     CsvValue(task.TaskId.ToString()),
                     CsvValue(task.Title),
                     CsvValue(task.Project?.Name ?? ""),
-                    CsvValue(task.DueDate?.ToString("yyyy-MM-dd") ?? ""),
+                    CsvValue(
+                        task.DueDate?.ToString("yyyy-MM-dd") ?? ""),
                     CsvValue(task.Priority),
                     CsvValue(task.Status)
                 }));
             }
 
             return File(
-                new UTF8Encoding(true).GetBytes(csv.ToString()),
+                new UTF8Encoding(true).GetBytes(
+                    csv.ToString()),
                 "text/csv",
                 "AtlasTaskFlow_Tasks.csv");
         }
 
         // =====================================
-        // 8. VALIDATE TASK AND PROJECT OWNER
+        // 7. VALIDATE ADMIN TASK
         // =====================================
-        private bool ValidTask(TaskItem task, string userId)
+        private bool ValidTask(
+            TaskItem task,
+            string userId)
         {
-            bool validFields =
+            bool fieldsAreValid =
                 !string.IsNullOrWhiteSpace(task.Title) &&
                 task.Title.Length <= 200 &&
                 (task.Description == null ||
@@ -378,16 +463,15 @@ namespace Atlas_TaskFlow_App.Controllers
                 new[] { "To Do", "In Progress", "Completed" }
                     .Contains(task.Status);
 
-            // Do not trust ProjectId sent by the browser
             bool ownsProject = _db.Projects.Any(p =>
                 p.ProjectId == task.ProjectId &&
                 p.OwnerUserId == userId);
 
-            return validFields && ownsProject;
+            return fieldsAreValid && ownsProject;
         }
 
         // =====================================
-        // 9. LOAD ONLY MY PROJECTS
+        // 8. LOAD ADMIN PROJECT OPTIONS
         // =====================================
         private void LoadProjects(string userId)
         {
@@ -398,7 +482,7 @@ namespace Atlas_TaskFlow_App.Controllers
         }
 
         // =====================================
-        // 10. SAFE CSV VALUE
+        // 9. SAFE CSV FORMATTING
         // =====================================
         private static string CsvValue(string value)
         {

@@ -1,22 +1,26 @@
 ﻿
+@* App #1 - Atlas TaskFlow - Calendar *@
+@* Admin-owned and Member-assigned deadlines *@
+
 @model List<Atlas_TaskFlow_App.Models.TaskItem>
+@using Atlas_TaskFlow_App.Models
 
 @{
     Layout = "_AppLayout";
     ViewData["Title"] = "Calendar";
 
-    var projects =
-        ViewBag.ProjectList as
-        List<Atlas_TaskFlow_App.Models.Project>
-        ?? new List<Atlas_TaskFlow_App.Models.Project>();
+    bool isAdmin = User.IsInRole("Admin");
+
+    var projects = ViewBag.ProjectList as List<Project>
+                   ?? new List<Project>();
 
     int totalTasks = Model.Count;
 
-    int completedTasks = Model.Count(
-        t => t.Status == "Completed"
-    );
+    int completedTasks = Model.Count(t =>
+        t.Status == "Completed");
 
-    int unfinishedTasks = totalTasks - completedTasks;
+    int unfinishedTasks =
+        totalTasks - completedTasks;
 }
 
 @section Styles {
@@ -28,18 +32,34 @@
 
     <!-- HEADER -->
     <div class="wf-heading">
+
         <div>
             <h1>Calendar</h1>
-            <p>View real tasks and deadlines from SQL Server.</p>
+
+            <p>
+                @(isAdmin
+                    ? "View project tasks and deadlines."
+                    : "View your assigned tasks and deadlines.")
+            </p>
         </div>
 
         <div class="wf-actions">
 
-            <button type="button"
-                    class="wf-btn wf-btn-primary"
-                    onclick="document.getElementById('createTaskDialog').showModal()">
-                + New Task
-            </button>
+            @if (isAdmin)
+            {
+                <button type="button"
+                        class="wf-btn wf-btn-primary"
+                        onclick="document.getElementById('createTaskDialog').showModal()">
+                    + New Task
+                </button>
+            }
+            else
+            {
+                <a class="wf-btn wf-btn-primary"
+                   href="@Url.Action("Index", "Tasks")">
+                    My Assigned Tasks
+                </a>
+            }
 
             <button type="button"
                     class="wf-btn wf-btn-outline"
@@ -51,7 +71,7 @@
         </div>
     </div>
 
-    <!-- REAL DATA SUMMARY -->
+    <!-- STATISTICS -->
     <div class="wf-stats-four">
 
         <div class="wf-stat-card">
@@ -80,19 +100,26 @@
 
     </div>
 
-    <!-- DATA RECEIVED FROM RAZOR -->
+    <!-- DATA PROVIDED TO EXISTING CALENDAR JS -->
     <div id="calendarTaskData" hidden>
 
         @foreach (var task in Model)
         {
+            string? taskUrl = isAdmin
+                ? Url.Action("Edit", "Tasks",
+                    new { id = task.TaskId })
+                : Url.Action("Index", "Tasks");
+
             <span data-calendar-task
                   data-id="@task.TaskId"
                   data-date="@(task.DueDate?.ToString("yyyy-MM-dd"))"
                   data-project="@(task.Project?.Name ?? "Unknown")"
                   data-priority="@task.Priority"
                   data-status="@task.Status"
-                  data-edit-url="@Url.Action("Edit", "Tasks", new { id = task.TaskId })">
+                  data-edit-url="@taskUrl">
+
                 @task.Title
+
             </span>
         }
 
@@ -133,7 +160,7 @@
 
                     </div>
 
-                    <!-- VIEW OPTIONS -->
+                    <!-- VIEWS -->
                     <div class="wf-view-switch">
 
                         <button type="button"
@@ -161,7 +188,7 @@
 
                 </div>
 
-                <!-- MONTH VIEW -->
+                <!-- MONTH -->
                 <div data-calendar-panel="month">
 
                     <div class="wf-weekdays">
@@ -180,7 +207,7 @@
 
                 </div>
 
-                <!-- WEEK VIEW -->
+                <!-- WEEK -->
                 <div data-calendar-panel="week" hidden>
 
                     <div class="wf-alternate-calendar">
@@ -195,7 +222,7 @@
 
                 </div>
 
-                <!-- DAY VIEW -->
+                <!-- DAY -->
                 <div data-calendar-panel="day" hidden>
 
                     <div class="wf-alternate-calendar">
@@ -210,7 +237,7 @@
 
                 </div>
 
-                <!-- LIST VIEW -->
+                <!-- LIST -->
                 <div data-calendar-panel="list" hidden>
 
                     <div class="wf-alternate-calendar">
@@ -225,22 +252,26 @@
 
             </section>
 
-            <!-- PAGE FOOTER -->
+            <!-- FOOTER -->
             <section class="wf-panel wf-section-gap">
 
                 <div class="wf-panel-heading">
+
                     <h2>Manage Scheduled Tasks</h2>
 
                     <a href="@Url.Action("Index", "Tasks")">
                         View All Tasks
                     </a>
+
                 </div>
 
                 <div class="wf-mini-activity">
 
                     <p>
-                        Create or edit tasks in My Tasks.
-                        Their due dates will appear here.
+                        @(isAdmin
+                            ? "Create or edit tasks in My Tasks."
+                            : "Update assigned task status in My Tasks.")
+                        Their due dates appear here.
                     </p>
 
                     <p>
@@ -256,15 +287,16 @@
         <!-- RIGHT SIDEBAR -->
         <aside class="wf-side">
 
-            <!-- UPCOMING TASKS -->
             <section class="wf-panel">
 
                 <div class="wf-panel-heading">
+
                     <h2>Upcoming Tasks</h2>
 
                     <a href="@Url.Action("Index", "Tasks")">
                         View All
                     </a>
+
                 </div>
 
                 <div id="calendarUpcoming"
@@ -273,7 +305,7 @@
 
             </section>
 
-            <!-- REAL FILTERS -->
+            <!-- FILTERS -->
             <section class="wf-panel wf-section-gap">
 
                 <div class="wf-panel-heading">
@@ -318,10 +350,13 @@
 
                 <div class="wf-divider"></div>
 
-                <a class="wf-btn wf-btn-outline wf-full-button"
-                   href="@Url.Action("Index", "Projects")">
-                    View Projects
-                </a>
+                @if (isAdmin)
+                {
+                    <a class="wf-btn wf-btn-outline wf-full-button"
+                       href="@Url.Action("Index", "Projects")">
+                        View Projects
+                    </a>
+                }
 
                 <a class="wf-btn wf-btn-outline wf-full-button"
                    href="@Url.Action("Index", "Tasks")">

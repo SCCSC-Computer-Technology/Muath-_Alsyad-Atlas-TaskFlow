@@ -1,24 +1,22 @@
 ﻿
 @* App #1 - Atlas TaskFlow - Dashboard *@
-@* Real user data - ASP.NET Core MVC + SQL Server *@
+@* Shared task access - Admin and Member *@
 
 @model List<Atlas_TaskFlow_App.Models.TaskItem>
+@using Atlas_TaskFlow_App.Models
 
 @{
     Layout = "_AppLayout";
     ViewData["Title"] = "Dashboard";
 
-    // Current signed-in Identity user
+    bool isAdmin = User.IsInRole("Admin");
     string userName = User.Identity?.Name ?? "User";
 
-    // Current date and week
     DateTime today = DateTime.Today;
-
     int daysSinceMonday = ((int)today.DayOfWeek + 6) % 7;
     DateTime monday = today.AddDays(-daysSinceMonday);
     DateTime nextMonday = monday.AddDays(7);
 
-    // Statistics from the current user's tasks
     int totalTasks = Model.Count;
 
     int overdueTasks = Model.Count(t =>
@@ -27,39 +25,38 @@
         t.Status != "Completed");
 
     int dueThisWeek = Model.Count(t =>
-        t.DueDate >= monday &&
+        t.DueDate >= today &&
         t.DueDate < nextMonday &&
         t.Status != "Completed");
 
     int completedTasks = Model.Count(t =>
         t.Status == "Completed");
 
-    // These projects are filtered by DashboardController
-    var projects = ViewBag.ProjectList as
-        List<Atlas_TaskFlow_App.Models.Project>
-        ?? new List<Atlas_TaskFlow_App.Models.Project>();
+    var projects = ViewBag.ProjectList as List<Project>
+                   ?? new List<Project>();
 
-    int activeProjects = ViewBag.ActiveProjects == null
-        ? 0
-        : (int)ViewBag.ActiveProjects;
+    int activeProjects = Convert.ToInt32(
+        ViewBag.ActiveProjects ?? 0);
 
-    // Only unfinished upcoming tasks
-    var upcomingTasks = Model
-        .Where(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date >= today &&
-            t.Status != "Completed")
+    // Show ACTIVE tasks, including overdue tasks.
+    var activeTasks = Model
+        .Where(t => t.Status != "Completed")
         .OrderBy(t => t.DueDate)
         .Take(8)
         .ToList();
 
-    // Calendar for the current month
-    DateTime firstDay = new DateTime(today.Year, today.Month, 1);
-    int daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
-    int firstWeekday = (int)firstDay.DayOfWeek;
-    int calendarCells = ((firstWeekday + daysInMonth + 6) / 7) * 7;
+    DateTime firstDay =
+        new DateTime(today.Year, today.Month, 1);
 
-    // Real task deadlines for calendar markers
+    int daysInMonth =
+        DateTime.DaysInMonth(today.Year, today.Month);
+
+    int firstWeekday =
+        (int)firstDay.DayOfWeek;
+
+    int calendarCells =
+        ((firstWeekday + daysInMonth + 6) / 7) * 7;
+
     var taskDates = Model
         .Where(t => t.DueDate.HasValue)
         .Select(t => t.DueDate!.Value.Date)
@@ -67,13 +64,12 @@
 }
 
 @section Styles {
-    <link rel="stylesheet"
-          href="@Url.Content("~/css/dashboard.css")" />
+    <link rel="stylesheet" href="~/css/dashboard.css" />
 }
 
 <div class="dashboard-page">
 
-    <!-- DASHBOARD HEADER -->
+    <!-- HEADER -->
     <div class="dashboard-heading">
 
         <div class="heading-text">
@@ -81,53 +77,64 @@
             <h1>Welcome back, @userName!</h1>
 
             <p>
-                Here's an overview of your tasks and projects.
+                @(isAdmin
+                    ? "Here's an overview of your projects and tasks."
+                    : "Here's an overview of your assigned tasks.")
             </p>
 
         </div>
 
         <div class="new-task-menu">
 
-            @if (projects.Count > 0)
+            @if (isAdmin)
             {
-                <!-- Open the existing Create Task Modal -->
-                <button type="button"
-                        class="new-task-button"
-                        onclick="document.getElementById('createTaskDialog').showModal()">
+                @if (projects.Count > 0)
+                {
+                    <button type="button"
+                            class="new-task-button"
+                            onclick="document.getElementById('createTaskDialog').showModal()">
 
-                    <svg class="icon" aria-hidden="true">
-                        <use href="#i-plus"></use>
-                    </svg>
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-plus"></use>
+                        </svg>
 
-                    <span>New Task</span>
+                        <span>New Task</span>
+                    </button>
+                }
+                else
+                {
+                    <a class="new-task-button"
+                       style="text-decoration:none;"
+                       href="@Url.Action("Create", "Projects")">
 
-                </button>
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-plus"></use>
+                        </svg>
+
+                        <span>New Project</span>
+                    </a>
+                }
             }
             else
             {
-                <!-- A new user must create a project first -->
                 <a class="new-task-button"
                    style="text-decoration:none;"
-                   href="@Url.Action("Create", "Projects")">
+                   href="@Url.Action("Index", "Tasks")">
 
                     <svg class="icon" aria-hidden="true">
-                        <use href="#i-plus"></use>
+                        <use href="#i-task"></use>
                     </svg>
 
-                    <span>New Project</span>
-
+                    <span>My Assigned Tasks</span>
                 </a>
             }
 
         </div>
-
     </div>
 
-    <!-- REAL STATISTICS -->
-    <section class="stats-grid"
-             aria-label="Task statistics">
+    <!-- STATISTICS -->
+    <section class="stats-grid" aria-label="Task statistics">
 
-        <!-- TOTAL TASKS -->
         <article class="stat-card">
 
             <div class="stat-icon stat-blue">
@@ -137,19 +144,16 @@
             </div>
 
             <div class="stat-information">
-
                 <div class="stat-title">
                     <strong>@totalTasks</strong>
                     <span>Total Tasks</span>
                 </div>
 
-                <p>@dueThisWeek due this week</p>
-
+                <p>@completedTasks completed tasks</p>
             </div>
 
         </article>
 
-        <!-- OVERDUE -->
         <article class="stat-card">
 
             <div class="stat-icon stat-red">
@@ -159,7 +163,6 @@
             </div>
 
             <div class="stat-information">
-
                 <div class="stat-title">
                     <strong>@overdueTasks</strong>
                     <span>Overdue</span>
@@ -170,12 +173,10 @@
                         ? "Needs attention"
                         : "No overdue tasks")
                 </p>
-
             </div>
 
         </article>
 
-        <!-- DUE THIS WEEK -->
         <article class="stat-card">
 
             <div class="stat-icon stat-orange">
@@ -185,19 +186,16 @@
             </div>
 
             <div class="stat-information">
-
                 <div class="stat-title">
                     <strong>@dueThisWeek</strong>
                     <span>Due This Week</span>
                 </div>
 
                 <p>Your upcoming deadlines</p>
-
             </div>
 
         </article>
 
-        <!-- ACTIVE PROJECTS -->
         <article class="stat-card">
 
             <div class="stat-icon stat-green">
@@ -207,32 +205,34 @@
             </div>
 
             <div class="stat-information">
-
                 <div class="stat-title">
                     <strong>@activeProjects</strong>
                     <span>Active Projects</span>
                 </div>
 
-                <p>Your active projects</p>
-
+                <p>
+                    @(isAdmin
+                        ? "Your active projects"
+                        : "Projects with assigned tasks")
+                </p>
             </div>
 
         </article>
 
     </section>
 
-    <!-- TWO COLUMN DASHBOARD -->
+    <!-- MAIN DASHBOARD -->
     <div class="dashboard-columns">
 
-        <!-- LEFT COLUMN -->
+        <!-- LEFT SIDE -->
         <div class="dashboard-left">
 
-            <!-- UPCOMING TASKS -->
+            <!-- ACTIVE TASKS -->
             <section class="dashboard-panel">
 
                 <div class="panel-heading">
 
-                    <h2>My Upcoming Tasks</h2>
+                    <h2>My Active Tasks</h2>
 
                     <a class="panel-link"
                        href="@Url.Action("Index", "Tasks")">
@@ -242,7 +242,6 @@
                         <svg class="icon" aria-hidden="true">
                             <use href="#i-arrow"></use>
                         </svg>
-
                     </a>
 
                 </div>
@@ -264,37 +263,52 @@
 
                         <tbody>
 
-                            @if (upcomingTasks.Count == 0)
+                            @if (activeTasks.Count == 0)
                             {
                                 <tr>
                                     <td colspan="6"
-                                        style="text-align:center;
-                                               padding:22px;
+                                        style="padding:24px;
+                                               text-align:center;
                                                color:#64748b;">
 
-                                        No upcoming tasks.
+                                        No active tasks.
 
                                         <a href="@Url.Action("Index", "Tasks")">
                                             View My Tasks
                                         </a>
-
                                     </td>
                                 </tr>
                             }
                             else
                             {
-                                @foreach (var task in upcomingTasks)
+                                @foreach (var task in activeTasks)
                                 {
+                                    bool isOverdue =
+                                        task.DueDate.HasValue &&
+                                        task.DueDate.Value.Date < today;
+
                                     <tr>
 
                                         <td></td>
 
                                         <td class="task-name">
 
-                                            <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })"
-                                               style="color:inherit;text-decoration:none;">
-                                                @task.Title
-                                            </a>
+                                            @if (isAdmin)
+                                            {
+                                                <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })"
+                                                   style="color:inherit;
+                                                          text-decoration:none;">
+                                                    @task.Title
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@Url.Action("Index", "Tasks")"
+                                                   style="color:inherit;
+                                                          text-decoration:none;">
+                                                    @task.Title
+                                                </a>
+                                            }
 
                                         </td>
 
@@ -304,26 +318,28 @@
 
                                         <td>
                                             @task.DueDate?.ToString("MMM dd, yyyy")
+
+                                            @if (isOverdue)
+                                            {
+                                                <small style="color:#dc2626;
+                                                              display:block;">
+                                                    Overdue
+                                                </small>
+                                            }
                                         </td>
 
-                                        <td>
-                                            @task.Priority
-                                        </td>
+                                        <td>@task.Priority</td>
 
-                                        <td>
-                                            @task.Status
-                                        </td>
+                                        <td>@task.Status</td>
 
                                     </tr>
                                 }
                             }
 
                         </tbody>
-
                     </table>
 
                 </div>
-
             </section>
 
             <!-- RECENT ACTIVITY -->
@@ -345,22 +361,21 @@
 
                         <p>
                             Activity history is not available yet.
-                            Your current tasks and projects are
-                            displayed using your real SQL Server data.
+                            Your current tasks are loaded
+                            from SQL Server.
                         </p>
 
                     </div>
 
                 </div>
-
             </section>
 
         </div>
 
-        <!-- RIGHT COLUMN -->
+        <!-- RIGHT SIDE -->
         <div class="dashboard-right">
 
-            <!-- REAL CALENDAR PREVIEW -->
+            <!-- CALENDAR PREVIEW -->
             <section class="dashboard-panel calendar-panel">
 
                 <div class="panel-heading">
@@ -378,7 +393,9 @@
 
                     <span aria-hidden="true"></span>
 
-                    <strong>@today.ToString("MMMM yyyy")</strong>
+                    <strong>
+                        @today.ToString("MMMM yyyy")
+                    </strong>
 
                     <span aria-hidden="true"></span>
 
@@ -387,7 +404,6 @@
                 <div class="calendar-grid"
                      aria-label="Current month calendar">
 
-                    <!-- Weekday labels -->
                     <span class="weekday">Sun</span>
                     <span class="weekday">Mon</span>
                     <span class="weekday">Tue</span>
@@ -396,14 +412,19 @@
                     <span class="weekday">Fri</span>
                     <span class="weekday">Sat</span>
 
-                    <!-- Build calendar days -->
                     @for (int i = 0; i < calendarCells; i++)
                     {
-                        DateTime day = firstDay.AddDays(i - firstWeekday);
+                        DateTime day = firstDay.AddDays(
+                            i - firstWeekday);
 
-                        bool isCurrentMonth = day.Month == today.Month;
-                        bool isToday = day.Date == today;
-                        bool hasTask = taskDates.Contains(day.Date);
+                        bool isCurrentMonth =
+                            day.Month == today.Month;
+
+                        bool isToday =
+                            day.Date == today;
+
+                        bool hasTask =
+                            taskDates.Contains(day.Date);
 
                         string dayClass = "calendar-day";
 
@@ -423,25 +444,37 @@
                         }
 
                         <span class="@dayClass"
-                              title="@(hasTask ? "Task deadline: " + day.ToString("MMM dd, yyyy") : day.ToString("MMM dd, yyyy"))">
+                              title="@(hasTask
+                                  ? "Task deadline: " +
+                                    day.ToString("MMM dd, yyyy")
+                                  : day.ToString("MMM dd, yyyy"))">
+
                             @day.Day
                         </span>
                     }
 
                 </div>
-
             </section>
 
-            <!-- REAL PROJECT PROGRESS -->
+            <!-- PROJECT PROGRESS -->
             <section class="dashboard-panel progress-panel">
 
                 <div class="panel-heading">
 
-                    <h2>Project Progress</h2>
+                    <h2>
+                        @(isAdmin
+                            ? "Project Progress"
+                            : "My Progress by Project")
+                    </h2>
 
                     <a class="panel-link"
-                       href="@Url.Action("Index", "Projects")">
-                        View All Projects
+                       href="@(isAdmin
+                           ? Url.Action("Index", "Projects")
+                           : Url.Action("Index", "Tasks"))">
+
+                        @(isAdmin
+                            ? "View All Projects"
+                            : "View My Tasks")
                     </a>
 
                 </div>
@@ -452,11 +485,20 @@
                                 color:#64748b;
                                 font-size:12px;">
 
-                        No projects yet.
+                        @if (isAdmin)
+                        {
+                            <span>No projects yet.</span>
 
-                        <a href="@Url.Action("Create", "Projects")">
-                            Create your first project
-                        </a>
+                            <a href="@Url.Action("Create", "Projects")">
+                                Create your first project
+                            </a>
+                        }
+                        else
+                        {
+                            <span>
+                                No assigned projects yet.
+                            </span>
+                        }
 
                     </div>
                 }
@@ -464,20 +506,18 @@
                 {
                     @foreach (var project in projects.Take(4))
                     {
-                        // Tasks in this project
                         int projectTaskCount = Model.Count(t =>
                             t.ProjectId == project.ProjectId);
 
-                        // Completed tasks in this project
                         int projectCompleted = Model.Count(t =>
                             t.ProjectId == project.ProjectId &&
                             t.Status == "Completed");
 
-                        // Completion percentage
                         int percentage = projectTaskCount == 0
                             ? 0
                             : (int)Math.Round(
-                                projectCompleted * 100.0 / projectTaskCount);
+                                projectCompleted * 100.0 /
+                                projectTaskCount);
 
                         <div class="progress-item">
 
@@ -486,7 +526,9 @@
                                 <strong>@project.Name</strong>
 
                                 <span>
-                                    @projectCompleted of @projectTaskCount tasks completed
+                                    @projectCompleted of @projectTaskCount
+                                    @(isAdmin ? "tasks" : "assigned tasks")
+                                    completed
                                 </span>
 
                             </div>
@@ -494,7 +536,7 @@
                             <div class="progress-track">
 
                                 <div class="progress-fill"
-                                     style="width:@(percentage)%;">
+                                     style="width:@(percentage)%">
                                 </div>
 
                             </div>
@@ -510,8 +552,9 @@
     </div>
 
     <p class="dashboard-demo-note">
-        Dashboard statistics and project progress
-        are calculated from your account's data.
+        @(isAdmin
+            ? "Statistics are calculated from your owned projects."
+            : "Statistics are calculated from tasks assigned to you.")
     </p>
 
 </div>
